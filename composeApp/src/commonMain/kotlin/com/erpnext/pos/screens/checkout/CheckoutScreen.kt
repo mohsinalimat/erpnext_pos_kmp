@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,4 +160,11 @@ private fun SummaryRow(label: String, amount: Double, bold: Boolean = false) {
             style = if (bold) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium
         )
     }
+}
+
+
+@Composable
+@Preview()
+private fun CheckoutScreenPreview() {
+    CheckoutScreen {}
 }

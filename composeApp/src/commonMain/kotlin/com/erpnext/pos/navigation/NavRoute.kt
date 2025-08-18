@@ -10,7 +10,8 @@ data class NavigationItem(
 
 
 sealed class NavRoute(val path: String) {
-
+    object AuthCheck: NavRoute("auth_check")
+    object Login: NavRoute("login")
     object Home : NavRoute("home")
     object Inventory : NavRoute("inventory")
     object Sale : NavRoute("sale")

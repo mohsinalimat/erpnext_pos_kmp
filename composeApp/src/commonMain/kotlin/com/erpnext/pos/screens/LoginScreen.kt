@@ -1,5 +1,6 @@
 package com.erpnext.pos.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,76 +9,130 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 @Preview
 fun LoginScreen(
-    onLoginClick: (email: String, password: String) -> Unit = { _, _ -> },
+    onLoginSuccess: () -> Unit,
     isLoading: Boolean = false,
-    errorMessage: String? = null
 ) {
-    MaterialTheme {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by rememberSaveable { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
 
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Iniciar sesión", style = MaterialTheme.typography.headlineMedium)
+        }
 
-        Column(
-            modifier = Modifier.fillMaxSize().padding(36.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Welcome", style = MaterialTheme.typography.headlineMedium)
-
-            Spacer(Modifier.height(24.dp))
-
-            OutlinedTextField(
+        Spacer(Modifier.height(24.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp, 6.dp),
                 value = email,
+                isError = isError,
                 onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text("Correo electronico") },
+                singleLine = true,
+                placeholder = { Text("Nombre de usuario en el centro") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             )
 
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
+            TextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp, 6.dp),
                 value = password,
+                isError = isError,
                 onValueChange = { password = it },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
+                label = { Text("Contraseña") },
+                singleLine = true,
+                placeholder = { Text("Contraseña") },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    // Please provide localized description for accessibility services
+                    val description = if (passwordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, description)
+                    }
+                }
             )
+        }
 
-            Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
-            if (errorMessage != null) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (errorMessage.isNotEmpty()) {
                 Text(errorMessage, color = Color.Red)
                 Spacer(Modifier.height(8.dp))
             }
+        }
 
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Button(
-                onClick = { onLoginClick(email, password) },
+                onClick = {
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        onLoginSuccess()
+                        isError = true
+                    } else {
+                        errorMessage = "Credenciales Invalidas"
+                    }
+                },
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()
+                    .padding(25.dp, 16.dp),
+                colors = ButtonColors(
+                    Color.Black,
+                    Color.White,
+                    disabledContentColor = Color.Black,
+                    disabledContainerColor = Color.Gray
+                )
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
                 } else {
-                    Text("Login")
+                    Text("Ingresar")
                 }
             }
         }
-
     }
 }

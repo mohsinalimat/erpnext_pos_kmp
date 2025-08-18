@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.erpnext.pos.navigation.NavRoute
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,19 +38,29 @@ fun HomeScreen(
                         Icon(Icons.Filled.Refresh, contentDescription = "Update")
                     }
                     IconButton(onClick = {}) {
-                        Icon(Icons.Filled.OnlinePrediction, contentDescription = "Online Prediction")
+                        Icon(
+                            Icons.Filled.OnlinePrediction,
+                            contentDescription = "Online Prediction"
+                        )
                     }
                 }
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(24.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.padding(paddingValues)
+                .padding(end = 12.dp, start = 12.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header
             Column {
-                Text("Bienvenido", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(
+                    "Bienvenido",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(Modifier.height(15.dp))
                 Text("Espacio para agregar banners de notificacion -> General en v1")
             }
@@ -59,7 +70,10 @@ fun HomeScreen(
             // Tarjetas de resumen
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Column {
                             Text("Stock pendiente por recibir", fontWeight = FontWeight.Bold)
                             Text("Tienes 3 productos en espera")
@@ -69,7 +83,10 @@ fun HomeScreen(
                 }
 
                 Card(modifier = Modifier.fillMaxWidth()) {
-                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         Column {
                             Text("Recarga pendiente por recibir", fontWeight = FontWeight.Bold)
                             Text("Tienes 2 recargas en espera")
@@ -99,5 +116,10 @@ fun HomeScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
+}
 
+@Composable
+@Preview
+fun HomePreview() {
+    HomeScreen({}, {})
 }

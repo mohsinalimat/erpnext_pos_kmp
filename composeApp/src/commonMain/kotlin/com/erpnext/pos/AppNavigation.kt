@@ -17,6 +17,9 @@ import com.erpnext.pos.navigation.NavRoute
 import com.erpnext.pos.screens.customer.CustomerDetailScreen
 import com.erpnext.pos.screens.customer.CustomerListScreen
 
+fun shouldShowBottomBar(currentRoute: String): Boolean {
+    return currentRoute !in listOf(NavRoute.Login.path, NavRoute.AuthCheck.path)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,16 +31,27 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            BottomBarNavigation(
-                navController = navController,
-                currentRoute = currentRoute
-            )
+            if (shouldShowBottomBar(currentRoute)) {
+                BottomBarNavigation(
+                    navController = navController,
+                    currentRoute = currentRoute
+                )
+            }
         }
     ) { padding ->
         Box(Modifier.padding(padding)) {
-            NavHost(navController, startDestination = NavRoute.Home.path) {
+            NavHost(navController, startDestination = NavRoute.Login.path) {
+                composable(NavRoute.Login.path) {
+                    LoginScreen(
+                        onLoginSuccess = {
+                            navController.navigate(NavRoute.Home.path) {
+                                popUpTo(NavRoute.Login.path) { inclusive = true }
+                            }
+                        }
+                    )
+                }
                 composable(NavRoute.Home.path) {
-                   HomeScreen(onNavigate = { navController.navigate(NavRoute.Inventory.path) })
+                    HomeScreen(onNavigate = { navController.navigate(NavRoute.Inventory.path) })
                 }
                 composable(NavRoute.Inventory.path) {
                     InventoryScreen(onNavigate = { navController.navigate(NavRoute.Sale.path) })
@@ -57,6 +71,7 @@ fun AppNavigation() {
                     //val customerId = backStackEntry.path<String>("customerId") ?: ""
                     CustomerDetailScreen(
                         //  customerId = customerId ?: "",
+                        customerId = "1",
                         onBackClick = { navController.popBackStack() }
                     )
                 }

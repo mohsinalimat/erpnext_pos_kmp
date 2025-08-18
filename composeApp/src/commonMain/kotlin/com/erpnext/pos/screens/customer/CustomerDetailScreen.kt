@@ -27,6 +27,7 @@ data class Invoice(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerDetailScreen(
+    customerId: String,
     onBackClick: () -> Unit
 ) {
     val invoices = listOf(
