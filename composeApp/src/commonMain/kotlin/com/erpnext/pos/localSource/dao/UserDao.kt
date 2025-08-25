@@ -9,13 +9,10 @@ import com.erpnext.pos.localSource.entities.UserEntity
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addUsers(categories: List<UserEntity>)
+    suspend fun addUsers(user: UserEntity)
 
-    @Query("SELECT * FROM users")
-    fun getAllUsers(): List<UserEntity>
-
-    @Query("SELECT * FROM users WHERE id = :userId")
-    fun getCategory(userId: String): UserEntity
+    @Query("SELECT * FROM users WHERE name = :userId")
+    fun getUserInfo(userId: String): UserEntity
 
     @Query("DELETE FROM users")
     suspend fun deleteAll()

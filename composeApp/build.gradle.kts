@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
+
+    id("de.jensklingenberg.ktorfit") version "2.6.4"
 }
 
 kotlin {
@@ -29,7 +31,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            linkerOpts.add("-lsqlite3")
+            //linkerOpts.add("-lsqlite3")
         }
     }
 
@@ -67,7 +69,10 @@ kotlin {
             implementation(libs.androidx.room.coroutines)
             implementation(libs.androidx.room.paging)
 
-            implementation(libs.androidx.room.sqlite.wrapper)
+            //implementation(libs.androidx.room.sqlite.wrapper)
+
+            // Koin - DI
+            implementation("io.insert-koin:koin-android:3.5.3")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -82,11 +87,20 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.navigation.compose)
 
+            api("androidx.datastore:datastore-preferences:1.1.7")
+            api("androidx.datastore:datastore-core:1.1.7")
+
             implementation(libs.androidx.room)
             implementation(libs.androidx.sqlite.bundled)
 
-            implementation("androidx.datastore:datastore-preferences:1.1.7")
-            implementation("androidx.datastore:datastore-core:1.1.7")
+            implementation("io.insert-koin:koin-core:3.5.3")
+            implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+
+            implementation("de.jensklingenberg.ktorfit:ktorfit-lib:2.6.4")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

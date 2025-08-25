@@ -1,4 +1,4 @@
-package com.erpnext.pos.screens
+package com.erpnext.pos.views.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +27,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -34,16 +34,16 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-@Preview
+@ExperimentalMaterial3Api
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    isLoading: Boolean = false,
+    state: LoginState, actins: LoginAction
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
+    val isLoading = state != LoginState.Loading
 
     Column(
         modifier = Modifier
@@ -111,9 +111,9 @@ fun LoginScreen(
             Button(
                 onClick = {
                     if (email.isNotEmpty() && password.isNotEmpty()) {
-                        onLoginSuccess()
-                        isError = true
+                        actins.onLogin(email, password)
                     } else {
+                        isError = true
                         errorMessage = "Credenciales Invalidas"
                     }
                 },
@@ -135,4 +135,15 @@ fun LoginScreen(
             }
         }
     }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun LoginPreview() {
+    LoginScreen(
+        state = LoginState.Loading,
+        actins = LoginAction()
+    )
 }

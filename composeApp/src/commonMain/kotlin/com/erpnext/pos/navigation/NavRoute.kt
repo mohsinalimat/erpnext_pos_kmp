@@ -1,6 +1,7 @@
 package com.erpnext.pos.navigation
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.serialization.Serializable
 
 data class NavigationItem(
     val title: String,
@@ -9,9 +10,13 @@ data class NavigationItem(
 )
 
 
+@Serializable
 sealed class NavRoute(val path: String) {
-    object AuthCheck: NavRoute("auth_check")
+    @Serializable
+    object Splash: NavRoute("splash")
+    @Serializable
     object Login: NavRoute("login")
+    @Serializable
     object Home : NavRoute("home")
     object Inventory : NavRoute("inventory")
     object Sale : NavRoute("sale")

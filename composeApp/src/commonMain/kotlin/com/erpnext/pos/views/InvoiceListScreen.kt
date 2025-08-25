@@ -1,4 +1,4 @@
-package com.erpnext.pos.screens
+package com.erpnext.pos.views
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.time.Instant
 
 data class Sale(
     val id: String,

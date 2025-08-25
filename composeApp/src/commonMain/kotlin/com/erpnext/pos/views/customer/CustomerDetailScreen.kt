@@ -1,4 +1,4 @@
-package com.erpnext.pos.screens.customer
+package com.erpnext.pos.views.customer
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

@@ -3,11 +3,8 @@ package com.erpnext.pos.localSource.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "users")
-data class UserEntity(
+@Entity(tableName = "item")
+data class ItemEntity(
     @PrimaryKey(autoGenerate = false)
-    val name: String,
-    val email: String,
-    val phone: String,
-    val isActive: Boolean
+    val name: String
 )
