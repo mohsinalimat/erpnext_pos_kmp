@@ -121,7 +121,6 @@ dependencies {
     listOf(
         "kspAndroid",
         "kspDesktop",
-
         "kspIosX64",
         "kspIosArm64",
         "kspIosSimulatorArm64"
