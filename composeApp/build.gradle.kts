@@ -62,6 +62,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.plugin.auth)
 
             implementation(libs.koin.compose)
             implementation(libs.koin.core)
@@ -80,6 +81,8 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.android)
+
+            implementation("androidx.security:security-crypto:1.1.0-alpha06")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

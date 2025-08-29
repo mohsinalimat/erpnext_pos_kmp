@@ -111,12 +111,7 @@ fun LoginScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Button(
                 onClick = {
-                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                        actions.onLogin(email, password)
-                    } else {
-                        isError = true
-                        errorMessage = "Credenciales Invalidas"
-                    }
+                    actions.onLogin()
                 },
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()

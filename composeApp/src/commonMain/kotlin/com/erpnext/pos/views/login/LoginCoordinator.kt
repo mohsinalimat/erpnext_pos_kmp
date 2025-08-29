@@ -4,22 +4,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import org.koin.compose.koinInject
 
-class LoginCoodinator(
+class LoginCoordinator(
     val viewModel: LoginViewModel
 ) {
     val screenStateFlow = viewModel.stateFlow
 
-    fun doLogin(email: String, password: String) {
-        viewModel.doLogin(email, password)
+    fun doLogin() {
+        viewModel.doLogin()
     }
 }
 
 @Composable
-fun rememberLoginCoordinator(): LoginCoodinator {
+fun rememberLoginCoordinator(): LoginCoordinator {
     val viewModel: LoginViewModel = koinInject()
 
     return remember(viewModel) {
-        LoginCoodinator(
+        LoginCoordinator(
             viewModel = viewModel
         )
     }

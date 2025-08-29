@@ -13,9 +13,9 @@ class LoginRemoteSource(
     //private val userDao: UserDao
 ) {
     suspend fun login(credentials: CredentialsDto) : UserDto {
-        val data = apiService.login(credentials)
+        //val data = apiService.login(credentials)
         //userDao.addUsers(data.toEntity())
 
-        return data
+        return UserDto("", "","","", "", "", "", "", true)
     }
 }

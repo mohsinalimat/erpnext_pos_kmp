@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginRoute(
-    coordinator: LoginCoodinator = rememberLoginCoordinator(),
+    coordinator: LoginCoordinator = rememberLoginCoordinator(),
 ) {
     val uiState by coordinator.screenStateFlow.collectAsState(LoginState.Loading)
     val actions = rememberLoginActions(coordinator)
@@ -18,7 +18,7 @@ fun LoginRoute(
 }
 
 @Composable
-fun rememberLoginActions(coordinator: LoginCoodinator): LoginAction {
+fun rememberLoginActions(coordinator: LoginCoordinator): LoginAction {
     return remember(coordinator) {
         LoginAction(
             onLogin = coordinator::doLogin
