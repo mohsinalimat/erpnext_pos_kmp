@@ -32,6 +32,7 @@ class AndroidTokenStore(private val context: Context) : TokenStore, TransientAut
     private fun stringKey(key: String) = key
 
     override suspend fun save(tokens: TokenResponse) = mutex.withLock {
+        clear()
         prefs.edit().apply {
             putString(stringKey("access_token"), tokens.access_token)
             putString(stringKey("refresh_token"), tokens.refresh_token)

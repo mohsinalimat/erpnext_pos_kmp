@@ -57,7 +57,7 @@ class APIService(
         returnedState: String
     ): TokenResponse {
         require(expectedState == returnedState) { "CSRF state mismatch" }
-        val res = client.post(oauthConfig.tokenUrl) {
+        val res = clientOAuth.post(oauthConfig.tokenUrl) {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(Parameters.build {
                 append("grant_type", "authorization_code")
@@ -71,12 +71,11 @@ class APIService(
         }.body<TokenResponse>()
 
         store.save(res)
-        // store.save(BearerTokens(res.access_token, res.refresh_token ?: ""))
         return res
     }
 
     suspend fun refreshToken(refresh: String): TokenResponse {
-        return client.post(oauthConfig.tokenUrl) {
+        return clientOAuth.post(oauthConfig.tokenUrl) {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(Parameters.build {
                 append("grant_type", "refresh_token")
@@ -88,7 +87,7 @@ class APIService(
     }
 
     suspend fun revoke(accessToken: String) {
-        client.post(oauthConfig.revokeUrl) {
+        clientOAuth.post(oauthConfig.revokeUrl) {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody("token=$accessToken")
         }
