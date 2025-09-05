@@ -18,7 +18,6 @@ import io.ktor.http.*
 
 class APIService(
     client: HttpClient,
-    private val oauthConfig: OAuthConfig,
     private val store: TokenStore
 ) {
     private val clientOAuth = client
@@ -32,6 +31,7 @@ class APIService(
                         null
                     }
                     refreshTokens {
+                        //TODO: Obtener todo el OAuthConfig desde la Store
                         val current = store.load() ?: return@refreshTokens null
                         val refreshed =
                             refreshToken(current.refresh_token ?: return@refreshTokens null)
@@ -54,6 +54,7 @@ class APIService(
         }
 
     suspend fun exchangeCode(
+        oauthConfig: OAuthConfig,
         code: String,
         pkce: Pkce,
         expectedState: String,
@@ -95,13 +96,13 @@ class APIService(
         }.body()
     }
 
-    suspend fun revoke(accessToken: String) {
+    /*suspend fun revoke(accessToken: String) {
         clientOAuth.post(oauthConfig.revokeUrl) {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody("token=$accessToken")
         }
         store.clear()
-    }
+    }*/
 
     suspend fun items(): List<ItemDto> {
         return clientOAuth.get(Endpoints.Items.url) {

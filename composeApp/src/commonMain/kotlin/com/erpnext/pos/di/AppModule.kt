@@ -27,16 +27,6 @@ import org.koin.dsl.module
 val appModule = module {
 
     single {
-        OAuthConfig(
-            baseUrl = BuildKonfig.BASE_URL,
-            clientId = BuildKonfig.CLIENT_ID,
-            clientSecret = BuildKonfig.CLIENT_SECRET,
-            redirectUrl = BuildKonfig.REDIRECT_URI,
-            scopes = listOf("all", "openid")
-        )
-    }
-
-    single {
         HttpClient(defaultEngine()) {
             install(ContentNegotiation) { json() }
         }

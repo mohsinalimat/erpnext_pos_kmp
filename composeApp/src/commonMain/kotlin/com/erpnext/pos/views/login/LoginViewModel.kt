@@ -40,6 +40,7 @@ class LoginViewModel(
                 val oauthConfig = buildOAuthConfig(authStore)
                 val authRequest = buildAuthorizeRequest(oauthConfig)
                 val tokens = oauthService.exchangeCode(
+                    oauthConfig.tokenUrl,
                     code,
                     authRequest.pkce,
                     authRequest.state,
