@@ -2,12 +2,12 @@ package com.erpnext.pos.di
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.erpnext.pos.BuildKonfig
-import com.erpnext.pos.data.repositories.LoginRepositories
-import com.erpnext.pos.domain.usecases.LoginUseCase
+import com.erpnext.pos.data.repositories.InventoryRepository
+import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
 import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
-import com.erpnext.pos.remoteSource.datasources.LoginRemoteSource
+import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
 import com.erpnext.pos.remoteSource.oauth.OAuthConfig
 import com.erpnext.pos.views.login.LoginViewModel
 import com.erpnext.pos.views.splash.SplashViewModel
@@ -50,9 +50,9 @@ val appModule = module {
         )
     }
 
-    single { LoginRemoteSource(get()) }
-    single { LoginRepositories(get()) }
-    single { LoginUseCase(get()) }
+    single { InventoryRemoteSource(get(), get()) }
+    single { InventoryRepository(get()) }
+    single { FetchInventoryItemUseCase(get()) }
     single { LoginViewModel(get(), get(), get(), get(), get()) }
     single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
     single { NavigationManager(get()) }

@@ -1,7 +1,6 @@
-package com.erpnext.pos.remoteSource.dto
+package com.erpnext.pos.domain.models
 
-data class ItemDto(
-    var id: String,
+data class ItemBO(
     var name: String = "",
     var description: String,
     var barcode: String = "",

@@ -17,7 +17,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 class APIService(
-    private client: HttpClient,
+    client: HttpClient,
     private val oauthConfig: OAuthConfig,
     private val store: TokenStore
 ) {
