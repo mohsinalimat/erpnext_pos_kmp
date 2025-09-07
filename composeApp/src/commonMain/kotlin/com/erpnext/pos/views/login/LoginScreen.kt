@@ -50,9 +50,20 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            text = "ERP POS",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(top = 32.dp, bottom = 24.dp)
+            text = "ERPNext POS",
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.headlineMedium.copy( // Título más grande
+                fontWeight = FontWeight.Bold, // Más énfasis en el título
+                letterSpacing = 0.5.sp
+            )
+        )
+        Text(
+            text = "Inicio de sesion",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleSmall.copy( // Título más grande
+                fontWeight = FontWeight.Bold, // Más énfasis en el título
+                letterSpacing = 0.5.sp
+            )
         )
 
         when (state) {
@@ -66,11 +77,6 @@ fun LoginScreen(
             }
 
             is LoginState.Success -> {
-                /*listOf(
-                    Site("https://erp-ni.distribuidorareyes.com", "ERP Distribuidora Reyes"),
-                    Site("https://erp.quickboxnicaragua.com", "QuickBox Nicaragua"),
-                    Site("https://erp.insutexgroup.com", "InsuTex")
-                )*/
                 val sites = actions.existingSites()
                 if (!sites.isNullOrEmpty()) {
                     Text(
@@ -113,7 +119,7 @@ fun LoginScreen(
 
                 Row(
                     modifier = Modifier.fillMaxWidth()
-                        .padding(vertical = 12.dp, horizontal = 22.dp),
+                        .padding(vertical = 12.dp, horizontal = 18.dp),
                     verticalAlignment = Alignment.Top
                 ) {
                     UrlInputField(
@@ -124,7 +130,7 @@ fun LoginScreen(
 
                 Row( //top = 8.dp, start = 12.dp, end = 12.dp, bottom = 8.dp
                     modifier = Modifier.fillMaxWidth()
-                        .padding(vertical = 36.dp, horizontal = 12.dp),
+                        .padding(vertical = 36.dp, horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {

@@ -8,9 +8,8 @@ import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
-import com.erpnext.pos.remoteSource.oauth.SiteStore
 import com.erpnext.pos.remoteSource.oauth.buildAuthorizeRequest
-import com.erpnext.pos.remoteSource.oauth.buildOAuthConfig
+import com.erpnext.pos.remoteSource.oauth.toOAuthConfig
 import com.erpnext.pos.utils.TokenUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +21,6 @@ class LoginViewModel(
     private val authNavigator: AuthNavigator,
     private val oauthService: APIService,
     private val authStore: AuthInfoStore,
-    private val siteStore: SiteStore,
     private val navManager: NavigationManager
 ) : BaseViewModel() {
 
@@ -37,10 +35,10 @@ class LoginViewModel(
         _stateFlow.update { LoginState.Loading }
         viewModelScope.launch {
             try {
-                val oauthConfig = buildOAuthConfig(authStore)
-                val authRequest = buildAuthorizeRequest(oauthConfig)
+                val oAuthConfig = authStore.loadAuthInfoByUrl().toOAuthConfig()
+                val authRequest = buildAuthorizeRequest(oAuthConfig)
                 val tokens = oauthService.exchangeCode(
-                    oauthConfig.tokenUrl,
+                    oAuthConfig,
                     code,
                     authRequest.pkce,
                     authRequest.state,
@@ -55,17 +53,18 @@ class LoginViewModel(
 
     fun existingSites(): List<Site>? {
         _stateFlow.update { LoginState.Loading }
-        val sites = siteStore.loadSites()
+        val sites = authStore.loadAuthInfo()
+        val result = sites.map { Site(it.url, it.name) }
         _stateFlow.update { LoginState.Success }
-        return sites
+        return result
     }
 
-    //TODO: Obtener el URL del Site y luego los Site Info para poder autenticar
+    //TODO: Obtener el URL del Site y luego el Site Info para poder autenticar
     fun onSiteSelected(site: Site) {
         _stateFlow.update { LoginState.Loading }
         try {
             viewModelScope.launch {
-                val oauthConfig = buildOAuthConfig(authStore)
+                val oauthConfig = authStore.loadAuthInfoByUrl(site.url).toOAuthConfig()
                 val request = buildAuthorizeRequest(oauthConfig)
                 doLogin(request.url)
                 _stateFlow.update { LoginState.Success }
@@ -80,8 +79,7 @@ class LoginViewModel(
         viewModelScope.launch {
             val loginInfo = oauthService.getLoginWithSite(site.url)
             authStore.saveAuthInfo(loginInfo)
-            siteStore.saveSite(site)
-            val oauthConfig = buildOAuthConfig(authStore)
+            val oauthConfig = loginInfo.toOAuthConfig()
             val request = buildAuthorizeRequest(oauthConfig)
             doLogin(request.url)
             _stateFlow.update { LoginState.Success }

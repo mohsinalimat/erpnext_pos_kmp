@@ -27,7 +27,7 @@ data class InventoryItem(
 @Composable
 @Preview
 fun InventoryScreen(
-    onNavigate: () -> Unit,
+    state: InventoryState, actions: InventoryAction
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
@@ -55,7 +55,10 @@ fun InventoryScreen(
                         Icon(Icons.Filled.Refresh, contentDescription = "Update")
                     }
                     IconButton(onClick = {}) {
-                        Icon(Icons.Filled.OnlinePrediction, contentDescription = "Online Prediction")
+                        Icon(
+                            Icons.Filled.OnlinePrediction,
+                            contentDescription = "Online Prediction"
+                        )
                     }
                 }
             )

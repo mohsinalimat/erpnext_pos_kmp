@@ -16,16 +16,11 @@ interface TokenStore {
 }
 
 interface AuthInfoStore {
-    suspend fun loadAuthInfo(): LoginInfo
-    suspend fun saveAuthInfo(info: LoginInfo)
-    suspend fun clear()
-}
-
-interface SiteStore {
-    fun loadSites(): List<Site>?
-
-    suspend fun saveSite(site: Site)
-    suspend fun clearSite(url: String)
+    fun loadAuthInfo(): MutableList<LoginInfo>
+    fun loadAuthInfoByUrl(url: String? = null): LoginInfo
+    fun saveAuthInfo(info: LoginInfo)
+    fun getCurrentSite(): String?
+    fun clearAuthInfo()
 }
 
 /**

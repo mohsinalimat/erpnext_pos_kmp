@@ -29,13 +29,14 @@ val appModule = module {
     single {
         HttpClient(defaultEngine()) {
             install(ContentNegotiation) { json() }
+            expectSuccess = true
         }
     }
 
     single {
         APIService(
             client = get(),
-            oauthConfig = get(),
+            authStore = get(),
             store = get()
         )
     }
@@ -43,7 +44,7 @@ val appModule = module {
     single { InventoryRemoteSource(get(), get()) }
     single { InventoryRepository(get()) }
     single { FetchInventoryItemUseCase(get()) }
-    single { LoginViewModel(get(), get(), get(), get(), get()) }
+    single { LoginViewModel(get(), get(), get(), get()) }
     single<CoroutineScope> { CoroutineScope(SupervisorJob() + Dispatchers.IO) }
     single { NavigationManager(get()) }
     single { SplashViewModel(get(), get()) }

@@ -1,17 +1,18 @@
 package com.erpnext.pos.remoteSource.oauth
 
 import com.erpnext.pos.randomUrlSafe
+import com.erpnext.pos.remoteSource.dto.LoginInfo
+import kotlin.collections.ifEmpty
 
 data class AuthRequest(val url: String, val state: String, val pkce: Pkce)
 
-suspend fun buildOAuthConfig(authInfoStore: AuthInfoStore): OAuthConfig {
-    val authInfo = authInfoStore.loadAuthInfo()
+fun LoginInfo.toOAuthConfig(): OAuthConfig {
     return OAuthConfig(
-        baseUrl = authInfo.url,
-        clientId = authInfo.clientId,
-        clientSecret = authInfo.clientSecret,
-        redirectUrl = authInfo.redirectUrl,
-        scopes = listOf("all", "openid")
+        baseUrl = url,
+        clientSecret = clientSecret,
+        clientId = clientId,
+        redirectUrl = redirectUrl,
+        scopes = scopes.ifEmpty { listOf("all", "openid") }
     )
 }
 

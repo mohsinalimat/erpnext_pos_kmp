@@ -9,5 +9,6 @@ data class TokenResponse(
     val expires_in: Long? = null,
     val refresh_token: String? = null,
     val id_token: String? = null,
-    val scope: String? = null
+    val scope: String? = null,
+    var url: String? = null
 )

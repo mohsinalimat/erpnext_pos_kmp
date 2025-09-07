@@ -4,30 +4,24 @@ import android.content.Context
 import com.erpnext.pos.remoteSource.oauth.TokenStore
 import com.erpnext.pos.remoteSource.oauth.TransientAuthStore
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.sync.Mutex
 import androidx.security.crypto.EncryptedSharedPreferences
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.sync.withLock
 import androidx.core.content.edit
 import androidx.security.crypto.MasterKey
 import com.erpnext.pos.remoteSource.dto.LoginInfo
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
-import com.erpnext.pos.remoteSource.oauth.SiteStore
-import com.erpnext.pos.views.login.Site
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 
 class AndroidTokenStore(private val context: Context) : TokenStore, TransientAuthStore,
-    AuthInfoStore, SiteStore {
+    AuthInfoStore {
 
-    private val mutex = Mutex()
     private val stateFlow = MutableStateFlow<TokenResponse?>(null)
     private val json = Json { ignoreUnknownKeys = true }
 
     private val prefs by lazy {
-        val keyGen = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+        val keyGen = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
         EncryptedSharedPreferences.create(
             context,
             "secure_prefs",
@@ -57,43 +51,49 @@ class AndroidTokenStore(private val context: Context) : TokenStore, TransientAut
         val expires = prefs.getLong(stringKey("expires"), 0L)
         val idToken = prefs.getString(stringKey("id_token"), null) ?: return null
         val tokens = TokenResponse(
-            access_token = at,
-            refresh_token = rt,
-            expires_in = expires,
-            id_token = idToken
+            access_token = at, refresh_token = rt, expires_in = expires, id_token = idToken
         )
         stateFlow.value = tokens
         return tokens
     }
 
-    override suspend fun loadAuthInfo(): LoginInfo {
-        val url = prefs.getString(stringKey("base_url"), null) ?: ""
-        val clientId = prefs.getString(stringKey("client_id"), null) ?: ""
-        val clientSecret = prefs.getString(stringKey("client_secret"), null) ?: ""
-        val redirectUrl = prefs.getString(stringKey("redirect_url"), null) ?: ""
-        return LoginInfo(
-            url = url,
-            clientSecret = clientSecret,
-            clientId = clientId,
-            redirectUrl = redirectUrl,
-            scopes = listOf("all", "openid")
-        )
+    override fun loadAuthInfoByUrl(url: String?): LoginInfo {
+        var currentUrl = url
+        if (currentUrl.isNullOrEmpty())
+            currentUrl = getCurrentSite()
+        val sitesInfo = loadAuthInfo()
+        return sitesInfo.first { info -> info.url == currentUrl }
     }
 
-    override suspend fun saveAuthInfo(info: LoginInfo) {
-        clear()
+    override fun loadAuthInfo(): MutableList<LoginInfo> {
+        val sitesInfo = prefs.getString("sitesInfo", null)
+        if (sitesInfo.isNullOrEmpty())
+            return mutableListOf()
+        return json.decodeFromString(sitesInfo)
+    }
+
+    override fun saveAuthInfo(info: LoginInfo) {
+        val list = loadAuthInfo()
+        list.add(info)
+        val serialized = json.encodeToString(list)
         prefs.edit().apply {
-            putString(stringKey("base_url"), info.url)
-            putString(stringKey("client_id"), info.clientId)
-            putString(stringKey("client_secret"), info.clientSecret)
-            putString(stringKey("redirect_url"), info.redirectUrl)
+            putString("sitesInfo", serialized)
+            putString("current_site", info.url)
             apply()
         }
     }
 
-    override suspend fun clear() = mutex.withLock {
+    override fun getCurrentSite(): String? {
+        return prefs.getString(stringKey("current_site"), null)
+    }
+
+    override fun clearAuthInfo() {
+        prefs.edit { remove("sitesInfo") }
+    }
+
+    override suspend fun clear() {
         prefs.edit { clear() }
-        stateFlow.value = null
+        stateFlow.update { null }
     }
 
     override fun tokensFlow() = stateFlow.asStateFlow()
@@ -118,7 +118,7 @@ class AndroidTokenStore(private val context: Context) : TokenStore, TransientAut
     }
 
     // Site Store
-    override fun loadSites(): MutableList<Site>? {
+    /*override fun loadSites(): MutableList<Site>? {
         val sites = prefs.getString("sites", null) ?: return mutableListOf<Site>()
         return json.decodeFromString(sites)
     }
@@ -137,5 +137,5 @@ class AndroidTokenStore(private val context: Context) : TokenStore, TransientAut
         val sites = loadSites() ?: emptyList()
         val updated = sites.filter { it.url != url }
         updated.forEach { saveSite(it) }
-    }
+    }*/
 }

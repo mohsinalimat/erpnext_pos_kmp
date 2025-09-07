@@ -12,6 +12,7 @@ import com.erpnext.pos.views.inventory.InventoryScreen
 import com.erpnext.pos.views.InvoiceListScreen
 import com.erpnext.pos.views.customer.CustomerDetailScreen
 import com.erpnext.pos.views.customer.CustomerListScreen
+import com.erpnext.pos.views.inventory.InventoryRoute
 import com.erpnext.pos.views.login.LoginRoute
 import com.erpnext.pos.views.splash.SplashRoute
 
@@ -29,19 +30,12 @@ object NavGraph {
             }
             composable(NavRoute.Login.path) {
                 LoginRoute()
-                /*LoginScreen(
-                    onLoginSuccess = {
-                        navController.navigate(NavRoute.Home.path) {
-                            popUpTo(NavRoute.Login.path) { inclusive = true }
-                        }
-                    }
-                )*/
             }
             composable(NavRoute.Home.path) {
-                HomeScreen(onNavigate = { navController.navigate(NavRoute.Inventory.path) })
+                HomeScreen()
             }
             composable(NavRoute.Inventory.path) {
-                InventoryScreen(onNavigate = { navController.navigate(NavRoute.Sale.path) })
+                InventoryRoute()
             }
             composable(NavRoute.Sale.path) {
                 CheckoutScreen(onNavigate = { navController.navigate(NavRoute.Customer.path) })

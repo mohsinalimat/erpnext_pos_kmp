@@ -9,6 +9,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -23,9 +25,8 @@ fun SplashScreen(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            actions.isAuth()
-        }
+        delay(1500)
+        actions.isAuth()
     }
 
     if (state == SplashState.Loading) {
@@ -33,7 +34,11 @@ fun SplashScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                trackColor = Color.Blue,
+                color = Color.Cyan,
+                strokeWidth = 2.dp
+            )
         }
     }
 }
