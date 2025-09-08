@@ -40,33 +40,69 @@ fun HomeScreen(
                     )
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Settings")
-                    }
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
-                    }
-                    IconButton(onClick = {}) {
+                    // Contenedor para los actions, si necesitas espaciado específico entre ellos
+                    // Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    // Acción 1: Settings
+                    IconButton(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.size(40.dp)
+                    ) {
                         Icon(
-                            Icons.Filled.OnlinePrediction, contentDescription = "Online Prediction"
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(16.dp)
                         )
                     }
+
+                    // Spacer(Modifier.width(4.dp)) // Espacio opcional entre iconos
+
+                    // Acción 2: Refresh
+                    IconButton(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    // Spacer(Modifier.width(4.dp)) // Espacio opcional entre iconos
+
+                    // Acción 3: Online Prediction
+                    IconButton(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.OnlinePrediction,
+                            contentDescription = "Online Prediction",
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    // } // Fin del Row opcional
                 }
+                // colors = TopAppBarDefaults.smallTopAppBarColors(
+                //    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                // )
             )
         })
     { paddingValues ->
-        // Aplicamos el padding del Scaffold al contenido principal
         Column(
             modifier = Modifier
-                .padding(paddingValues) // Padding del Scaffold aplicado aquí
+                .padding(paddingValues)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp), // Padding general para el contenido interno
-            horizontalAlignment = Alignment.CenterHorizontally // Centra el contenido horizontalmente
+                .padding(
+                    top = 12.dp, bottom = 0.dp, end = 16.dp, start = 12.dp
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Sección de Bienvenida y banners
-            Column( // Usamos una Column para que el Text de banner esté debajo del de bienvenida
-                modifier = Modifier.fillMaxWidth(), // Ocupa todo el ancho
+            Column(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
@@ -74,7 +110,7 @@ fun HomeScreen(
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(Modifier.height(8.dp)) // Reducimos un poco el spacer
+                Spacer(Modifier.height(6.dp)) // Reducimos un poco el spacer
                 Text(
                     "Espacio para agregar banners de notificacion -> General en v1",
                     style = MaterialTheme.typography.bodyMedium // Estilo más apropiado

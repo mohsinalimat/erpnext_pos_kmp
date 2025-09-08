@@ -9,6 +9,7 @@ import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
 import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
 import com.erpnext.pos.remoteSource.oauth.OAuthConfig
+import com.erpnext.pos.views.inventory.InventoryViewModel
 import com.erpnext.pos.views.login.LoginViewModel
 import com.erpnext.pos.views.splash.SplashViewModel
 import io.ktor.client.HttpClient
@@ -53,6 +54,8 @@ val appModule = module {
             "./prefs.preferences_pb".toPath()
         }
     }
+
+    single { InventoryViewModel(get()) }
 }
 
 fun initKoin(config: KoinAppDeclaration? = null, modules: List<Module> = listOf()) {

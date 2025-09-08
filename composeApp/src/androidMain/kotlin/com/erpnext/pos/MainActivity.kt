@@ -1,5 +1,6 @@
 package com.erpnext.pos
 
+import AppTheme
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import com.erpnext.pos.di.initKoin
 import com.erpnext.pos.views.login.LoginViewModel
 import org.koin.android.ext.koin.androidContext
@@ -17,11 +19,14 @@ class MainActivity : ComponentActivity() {
     private val loginViewModel: LoginViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        enableEdgeToEdge()
 
         setContent {
-            App()
+            AppTheme {
+                AppNavigation()
+            }
         }
 
         handleIntent(intent)
@@ -40,10 +45,4 @@ class MainActivity : ComponentActivity() {
                 loginViewModel.onAuthCodeReceived(code)
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }

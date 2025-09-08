@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,32 +48,35 @@ fun BottomBarNavigation(
         NavRoute.Credits to "💳"
     )
 
-    // TODO: Dynamic BottomAppBar -> Open or Closed Session
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+    BottomAppBar(
+        modifier = Modifier.fillMaxWidth(),
+       containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = contentColorFor(MaterialTheme.colorScheme.surface)
     ) {
-        items.forEach { (route, icon) ->
-            val isSelected = currentRoute == route.path
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .clickable { navController.navigate(route.path) }
-                    .padding(horizontal = 8.dp)
-            ) {
-                Text(icon, fontSize = 20.sp)
-                Text(
-                    route.path.replaceFirstChar { it.uppercase() },
-                    fontSize = 12.sp,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
-                )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEach { (route, icon) ->
+                val isSelected = currentRoute == route.path
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { navController.navigate(route.path) }
+                        .padding(vertical = 4.dp, horizontal = 4.dp)
+                ) {
+                    Text(icon, fontSize = 20.sp)
+                    Text(
+                        route.path.replaceFirstChar { it.uppercase() },
+                        fontSize = 12.sp,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
-
 }

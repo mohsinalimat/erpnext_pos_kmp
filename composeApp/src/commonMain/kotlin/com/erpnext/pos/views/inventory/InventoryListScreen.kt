@@ -11,10 +11,26 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.input.ImeAction
 
 data class InventoryItem(
     val name: String,
@@ -49,15 +65,33 @@ fun InventoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inventario", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Inventario",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
+                    )
+                },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Update")
+                    IconButton(
+                        onClick = { /*TODO*/ },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Actualizar",
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
-                    IconButton(onClick = {}) {
+
+                    IconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
                         Icon(
                             Icons.Filled.OnlinePrediction,
-                            contentDescription = "Online Prediction"
+                            contentDescription = "Online Prediction",
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -133,4 +167,69 @@ fun InventoryScreen(
             }
         }
     }
+}
+
+@Composable
+fun SearchTextField(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholderText: String = "Buscar...",
+    onSearchAction: (() -> Unit)? = null
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchQueryChange,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp), // Un poco de padding vertical para que respire
+        placeholder = { Text(placeholderText, style = MaterialTheme.typography.bodyLarge) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = "Icono de búsqueda",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant // Un color sutil para el icono
+            )
+        },
+        trailingIcon = {
+            if (searchQuery.isNotEmpty()) {
+                IconButton(onClick = {
+                    onSearchQueryChange("") // Borra la búsqueda
+                    keyboardController?.show() // Opcional: vuelve a mostrar el teclado si se desea
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Borrar búsqueda",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = if (onSearchAction != null) ImeAction.Search else ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onSearch = {
+                if (onSearchAction != null) {
+                    onSearchAction()
+                    keyboardController?.hide()
+                } else {
+                    keyboardController?.hide()
+                }
+            },
+            onDone = {
+                keyboardController?.hide()
+            }
+        ),
+        colors = OutlinedTextFieldDefaults.colors( // Colores para que se vea más "Material You"
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+            focusedLabelColor = MaterialTheme.colorScheme.primary,
+            cursorColor = MaterialTheme.colorScheme.primary
+        ),
+        shape = MaterialTheme.shapes.medium // Bordes redondeados consistentes con M3
+    )
 }
