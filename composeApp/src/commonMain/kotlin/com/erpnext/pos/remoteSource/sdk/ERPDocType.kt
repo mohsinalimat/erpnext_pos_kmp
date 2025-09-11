@@ -1,4 +1,4 @@
-package com.erpnext.pos.remoteSource.api
+package com.erpnext.pos.remoteSource.sdk
 
 data class DocTypeFields(val doctype: ERPDocType, val fields: List<String>)
 
@@ -24,7 +24,8 @@ val fields: List<DocTypeFields> = listOf(
             "item_code",
             "disabled",
             "barcodes",
-            "stock_uom"
+            "stock_uom",
+            "item_group"
         ),
     ),
     DocTypeFields(

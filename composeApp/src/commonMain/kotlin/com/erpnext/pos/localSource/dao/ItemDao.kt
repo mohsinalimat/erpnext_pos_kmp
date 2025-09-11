@@ -6,18 +6,20 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.erpnext.pos.localSource.entities.ItemEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addItem(items: List<ItemEntity>)
+    suspend fun addItems(items: List<ItemEntity>)
 
-    @Query("SELECT * FROM tabItem")
+    @Query("SELECT * FROM tabItem ORDER BY name ASC")
     fun getAllItems(): PagingSource<Int, ItemEntity>
 
     @Query("SELECT * FROM tabItem WHERE name = :itemId")
     fun getCategory(itemId: String): ItemEntity
+
+    @Query("SELECT COUNT(*) FROM tabItem")
+    suspend fun countAll(): Int
 
     @Query("DELETE FROM tabItem")
     suspend fun deleteAll()

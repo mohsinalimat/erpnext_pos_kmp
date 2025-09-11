@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "e2aa1b4c066079b991816fef0a44778e",
+    "version": 5,
+    "identityHash": "2465ca89a2c7fcb0ac72ef7554d3fc3c",
     "entities": [
       {
         "tableName": "tabUser",
@@ -63,11 +63,11 @@
       },
       {
         "tableName": "tabItem",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `barcode` TEXT NOT NULL, `image` TEXT, `itemGroup` TEXT NOT NULL, `brand` TEXT, `price` REAL NOT NULL, `discount` REAL NOT NULL, `isService` INTEGER NOT NULL, `isStocked` INTEGER NOT NULL, `uom` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`itemCode` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `barcode` TEXT NOT NULL, `image` TEXT, `itemGroup` TEXT NOT NULL, `brand` TEXT, `price` REAL NOT NULL, `discount` REAL NOT NULL, `isService` INTEGER NOT NULL, `isStocked` INTEGER NOT NULL, `stockUom` TEXT NOT NULL, PRIMARY KEY(`itemCode`))",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "itemCode",
+            "columnName": "itemCode",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -130,8 +130,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "uom",
-            "columnName": "uom",
+            "fieldPath": "stockUom",
+            "columnName": "stockUom",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -139,7 +139,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "id"
+            "itemCode"
           ]
         }
       },
@@ -496,7 +496,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e2aa1b4c066079b991816fef0a44778e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2465ca89a2c7fcb0ac72ef7554d3fc3c')"
     ]
   }
 }

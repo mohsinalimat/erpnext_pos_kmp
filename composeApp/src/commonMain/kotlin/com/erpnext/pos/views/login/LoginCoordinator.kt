@@ -4,20 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import io.ktor.http.Url
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.koin.compose.koinInject
-import org.koin.core.option.viewModelScopeFactory
 
 class LoginCoordinator(
     val viewModel: LoginViewModel
 ) {
     val screenStateFlow = viewModel.stateFlow
 
-    fun existingSites(): List<Site>? {
-        return viewModel.existingSites()
+    fun existingSites() {
+        return viewModel.fetchSites()
     }
 
     fun onSiteSelected(site: Site) {

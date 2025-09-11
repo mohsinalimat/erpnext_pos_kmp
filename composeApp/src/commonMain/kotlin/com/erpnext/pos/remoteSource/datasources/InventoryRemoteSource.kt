@@ -9,8 +9,6 @@ import com.erpnext.pos.localSource.entities.ItemEntity
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
-
-import com.erpnext.pos.remoteSource.mapper.toEntity
 import com.erpnext.pos.remoteSource.paging.InventoryRemoteMediator
 import kotlinx.coroutines.flow.Flow
 
@@ -21,7 +19,7 @@ class InventoryRemoteSource(
 ) {
     fun getItems(): Flow<PagingData<ItemEntity>> {
         return Pager(
-            config = PagingConfig(pageSize = 15),
+            config = PagingConfig(pageSize = 20),
             remoteMediator = InventoryRemoteMediator(apiService, itemDao)
         ) {
             itemDao.getAllItems()

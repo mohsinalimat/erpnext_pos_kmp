@@ -1,12 +1,28 @@
 package com.erpnext.pos.views.inventory
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -20,13 +36,19 @@ import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -37,11 +59,10 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.erpnext.pos.domain.models.ItemBO
-import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.utils.formatDoubleToString
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -51,7 +72,49 @@ fun InventoryScreen(
     state: InventoryState,
     actions: InventoryAction
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        state = rememberTopAppBarState()
+    )
+    val gridState = rememberLazyGridState()
+
+    // Una lógica de scroll más precisa para ocultar/mostrar (como en Material Design)
+    var previousFirstVisibleItem by remember { mutableStateOf(0) }
+    var isFabReallyVisibleBasedOnScroll by remember { mutableStateOf(true) }
+
+    LaunchedEffect(gridState.firstVisibleItemIndex, gridState.isScrollInProgress) {
+        if (!gridState.isScrollInProgress && !isFabReallyVisibleBasedOnScroll) {
+            isFabReallyVisibleBasedOnScroll = true
+        } else if (gridState.isScrollInProgress) {
+            if (gridState.firstVisibleItemIndex > previousFirstVisibleItem) {
+                isFabReallyVisibleBasedOnScroll = false
+            } else if (gridState.firstVisibleItemIndex < previousFirstVisibleItem) {
+                isFabReallyVisibleBasedOnScroll = true
+            }
+        }
+        previousFirstVisibleItem = gridState.firstVisibleItemIndex
+    }
+
+    val finalFabVisibility = when (state) {
+        is InventoryState.Success -> isFabReallyVisibleBasedOnScroll
+        else -> false
+    }
+
+    // Determinar si los filtros deben tener sombra/elevación
+    // Se considera "scrolled" si el primer item no es visible o si tiene un offset de scroll
+    // Determinar si el contenido se ha desplazado bajo los filtros
+    val isContentScrolledUnderFilters by remember {
+        derivedStateOf {
+            // Log para depurar el estado del grid
+            print("InventoryScreen - GridState: firstVisibleItemIndex=${gridState.firstVisibleItemIndex}, firstVisibleItemScrollOffset=${gridState.firstVisibleItemScrollOffset}")
+            gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
+        }
+    }
+
+    val filterElevation by animateDpAsState(
+        targetValue = if (isContentScrolledUnderFilters) 4.dp else 0.dp,
+        label = "filterElevation"
+    )
+
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
@@ -62,6 +125,7 @@ fun InventoryScreen(
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { Text("Inventario", style = MaterialTheme.typography.titleLarge) },
@@ -84,21 +148,27 @@ fun InventoryScreen(
                         )
                     }
                 },
-                scrollBehavior = scrollBehavior
+                scrollBehavior = topAppBarScrollBehavior
             )
         },
         floatingActionButton = {
-            when (state) {
-                is InventoryState.Success -> {
-                    if (state.items.collectAsLazyPagingItems().itemCount > 0)
-                        ExtendedFloatingActionButton(
-                            onClick = actions.onPrint,
-                            icon = { Icon(Icons.Filled.Print, "Imprimir lista") },
-                            text = { Text("Imprimir") }
-                        )
-                }
+            AnimatedVisibility(
+                visible = finalFabVisibility, // <--- USA LA VARIABLE DE VISIBILIDAD
+                enter = slideInVertically(initialOffsetY = { it * 2 }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { it * 2 }) + fadeOut()
+            ) {
+                when (state) {
+                    is InventoryState.Success -> {
+                        if (state.items.collectAsLazyPagingItems().itemCount > 0)
+                            ExtendedFloatingActionButton(
+                                onClick = actions.onPrint,
+                                icon = { Icon(Icons.Filled.Print, "Imprimir lista") },
+                                text = { Text("Imprimir") }
+                            )
+                    }
 
-                else -> {}
+                    else -> {}
+                }
             }
         }
     ) { paddingValues ->
@@ -107,23 +177,29 @@ fun InventoryScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            InventoryFilters(
-                searchQuery = searchQuery,
-                selectedCategory = selectedCategory,
-                categories = categories,
-                onQueryChange = actions.onSearchQueryChanged,
-                onCategoryChange = actions.onCategorySelected,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                tonalElevation = filterElevation,
+                shadowElevation = filterElevation,
+            ) {
+                InventoryFilters(
+                    searchQuery = searchQuery,
+                    selectedCategory = selectedCategory,
+                    categories = categories,
+                    onQueryChange = actions.onSearchQueryChanged,
+                    onCategoryChange = actions.onCategorySelected,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
+                )
+            }
 
-            when (state) {
+            when (val currentState = state) {
                 InventoryState.Loading -> {
                     FullScreenLoadingIndicator()
                 }
 
                 is InventoryState.Error -> {
                     FullScreenErrorMessage(
-                        errorMessage = state.message,
+                        errorMessage = currentState.message,
                         onRetry = actions.onRefresh
                     )
                 }
@@ -136,16 +212,19 @@ fun InventoryScreen(
                 }
 
                 is InventoryState.Success -> {
-                    if (state.items.collectAsLazyPagingItems().itemCount > 0) {
+                    val items = currentState.items.collectAsLazyPagingItems()
+                    if (items.itemCount == 0 && items.loadState.refresh !is LoadState.Loading) {
                         EmptyStateMessage(
                             message = "No se encontraron productos que coincidan con tu selección.",
                             icon = Icons.Filled.SearchOff
                         )
+                    } else if (items.loadState.refresh is LoadState.Loading && items.itemCount == 0) {
+                        FullScreenLoadingIndicator()
                     } else {
                         InventoryListContent(
                             paddingValue = paddingValues,
-                            items = state.items.collectAsLazyPagingItems(),
-                            modifier = Modifier.weight(1f)
+                            items = items,
+                            listState = gridState
                         )
                     }
                 }
@@ -258,53 +337,105 @@ fun SearchTextField(
 private fun InventoryListContent(
     paddingValue: PaddingValues,
     items: LazyPagingItems<ItemBO>,
-    modifier: Modifier = Modifier
+    listState: LazyGridState
 ) {
-    /*LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)
-    ) {*/
-    when (items.loadState.refresh) {
-        LoadState.Loading -> {
-            Box(
-                modifier = Modifier
-                    .padding(paddingValue)
-                    .fillMaxSize()
-                    .background(Color.Transparent)
-            ) {
-                CircularProgressIndicator()
+    Box(
+        modifier = Modifier//.padding(paddingValue)
+            .fillMaxSize()
+    ) {
+        when (items.loadState.refresh) {
+            is LoadState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Transparent),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        trackColor = Color.Blue,
+                        color = Color.Cyan,
+                        strokeWidth = 2.dp
+                    )
+                }
             }
-        }
 
-        is LoadState.Error -> {
-            Box(
-                modifier = Modifier
-                    .padding(paddingValue)
-                    .fillMaxSize()
-                    .background(Color.Transparent)
-            ) {
-                Text(text = "Error")
+            is LoadState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .padding(paddingValue)
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                ) {
+                    Text(text = "Error")
+                }
             }
-        }
 
-        else -> {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                contentPadding = paddingValue
-            ) {
-                items(
-                    count = items.itemCount,
-                    key = { index -> items[index]?.itemCode ?: index },
-                    contentType = items.itemContentType { "ItemBO" },
-                ) { index ->
-                    val products = items[index] ?: return@items
-                    ProductRowItem(products)
+            else -> {
+                if (items.itemCount == 0) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No se encontraron productos.")
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(1),
+                        modifier = Modifier.fillMaxSize(),
+                        state = listState,
+                        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(
+                            count = items.itemCount,
+                            key = items.itemKey { it.itemCode },
+                            contentType = items.itemContentType { "ItemBO" }
+                        ) { index ->
+                            val product = items[index]
+                            if (product != null) {
+                                ProductRowItem(product)
+                            } else {
+                                PlaceholderProductRowItem()
+                            }
+                        }
+
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            if (items.loadState.append is LoadState.Loading) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.align(Alignment.Center).size(24.dp),
+                                        trackColor = Color.Blue,
+                                        color = Color.Cyan,
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                            }
+                        }
+
+                        if (items.loadState.append is LoadState.Error) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        "Error al cargar más.",
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-    //}
 }
 
 @Composable
@@ -318,7 +449,7 @@ fun ProductRowItem(product: ItemBO) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = MaterialTheme.shapes.medium
     ) {
         Row(
@@ -360,8 +491,17 @@ fun ProductRowItem(product: ItemBO) {
 // --- Componentes de Estado de Pantalla (Loading, Error, Empty) ---
 @Composable
 private fun FullScreenLoadingIndicator(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
+    Box(
+        modifier = modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center),
+            trackColor = Color.Blue,
+            color = Color.Cyan,
+            strokeWidth = 2.dp
+        )
     }
 }
 
@@ -371,7 +511,10 @@ private fun FullScreenErrorMessage(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 Icons.Filled.CloudOff,
@@ -398,7 +541,10 @@ private fun EmptyStateMessage(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 icon,
@@ -417,20 +563,149 @@ private fun EmptyStateMessage(
     }
 }
 
+// Función de extensión para el modificador de brillo (shimmer)
+fun Modifier.shimmerBackground(shape: CornerBasedShape = RoundedCornerShape(4.dp)): Modifier =
+    composed {
+        val transition = rememberInfiniteTransition(label = "shimmerTransition")
+        val translateAnim by transition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1000f, // Ajusta este valor según el tamaño de tu item y la velocidad deseada
+            animationSpec = infiniteRepeatable(
+                tween(durationMillis = 1200, easing = FastOutSlowInEasing), // Duración del brillo
+                RepeatMode.Restart
+            ),
+            label = "shimmerTranslateAnim"
+        )
+
+        val shimmerColors = listOf(
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), // Color base del placeholder
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f), // Color más claro para el brillo
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        )
+
+        this.background(
+            brush = Brush.linearGradient(
+                colors = shimmerColors,
+                start = Offset(translateAnim - 500f, translateAnim - 500f),
+                end = Offset(translateAnim, translateAnim)
+            ),
+            shape = shape
+        )
+    }
+
+@Composable
+fun PlaceholderProductRowItem(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = MaterialTheme.shapes.large, // Usa la misma forma que tu ProductRowItem
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface) // Fondo de la tarjeta
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp), // Mismo padding que ProductRowItem
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                // Placeholder para el nombre del producto (dos líneas)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f) // Ancho del placeholder del título
+                        .height(20.dp) // Altura de una línea de título
+                        .shimmerBackground(MaterialTheme.shapes.small)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f) // Segunda línea un poco más corta
+                        .height(20.dp)
+                        .shimmerBackground(MaterialTheme.shapes.small)
+                )
+                Spacer(modifier = Modifier.height(8.dp)) // Más espacio antes de los detalles
+
+                // Placeholder para "Disp:"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .height(16.dp) // Altura de una línea de cuerpo de texto
+                        .shimmerBackground(MaterialTheme.shapes.small)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                // Placeholder para "Cód:"
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .height(14.dp) // Altura de una línea de cuerpo de texto pequeño
+                        .shimmerBackground(MaterialTheme.shapes.small)
+                )
+            }
+            // Placeholder para el precio
+            Box(
+                modifier = Modifier
+                    .width(60.dp) // Ancho aproximado del precio
+                    .height(24.dp) // Altura del precio
+                    .shimmerBackground(MaterialTheme.shapes.small)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PlaceholderProductRowItemPreview() {
+    MaterialTheme { // Asegúrate de envolverlo en tu tema para que los colores funcionen
+        PlaceholderProductRowItem()
+    }
+}
+
+@Preview
+@Composable
+fun PlaceholderListPreview() {
+    MaterialTheme {
+        Column {
+            repeat(3) {
+                PlaceholderProductRowItem(modifier = Modifier.padding(bottom = 12.dp))
+            }
+        }
+    }
+}
+
 @Preview()
 @Composable
 fun InventoryScreenSuccessPreview() {
     val items = listOf(
         ItemBO(
-            "Palitos de pollo", "AVPLCJ400",
-            "Palitos de pollo congelados, cada de 400gr", "1234567890", "",
+            "Palitos de pollo", "Palitos de pollo congelados, cada de 400gr",
+            "AVPLCJ400", "1234567890", "", "CARNES", "Frito Lay",
             100.456, 10.0, 0.0, false, false, "UND"
-        )
+        ),
+        ItemBO(
+            "Palitos de pollo", "Palitos de pollo congelados, cada de 400gr",
+            "AVPLCJ400", "1234567890", "", "CARNES", "Frito Lay",
+            100.456, 10.0, 0.0, false, false, "UND"
+        ),
+        ItemBO(
+            "Palitos de pollo", "Palitos de pollo congelados, cada de 400gr",
+            "AVPLCJ400", "1234567890", "", "CARNES", "Frito Lay",
+            100.456, 10.0, 0.0, false, false, "UND"
+        ),
+        ItemBO(
+            "Palitos de pollo", "Palitos de pollo congelados, cada de 400gr",
+            "AVPLCJ400", "1234567890", "", "CARNES", "Frito Lay",
+            100.456, 10.0, 0.0, false, false, "UND"
+        ),
+        ItemBO(
+            "Palitos de pollo", "Palitos de pollo congelados, cada de 400gr",
+            "AVPLCJ400", "1234567890", "", "CARNES", "Frito Lay",
+            100.456, 10.0, 0.0, false, false, "UND"
+        ),
     )
     val flow: Flow<PagingData<ItemBO>> = flowOf(PagingData.from(items))
     MaterialTheme {
         InventoryScreen(
-
             state = InventoryState.Success(flow),
             actions = InventoryAction()
         )

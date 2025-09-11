@@ -10,5 +10,4 @@ data class TokenResponse(
     val refresh_token: String? = null,
     val id_token: String? = null,
     val scope: String? = null,
-    var url: String? = null
 )

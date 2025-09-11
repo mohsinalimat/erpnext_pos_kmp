@@ -26,7 +26,7 @@ import com.erpnext.pos.localSource.entities.UserEntity
         POSProfileEntity::class,
         SalesInvoiceEntity::class,
     ],
-    version = 1,
+    version = 5,
     exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)

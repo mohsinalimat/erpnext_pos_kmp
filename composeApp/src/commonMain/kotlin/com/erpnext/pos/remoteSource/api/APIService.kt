@@ -9,9 +9,15 @@ import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
 import com.erpnext.pos.remoteSource.oauth.OAuthConfig
 import com.erpnext.pos.remoteSource.oauth.Pkce
 import com.erpnext.pos.remoteSource.oauth.TokenStore
-import com.erpnext.pos.remoteSource.oauth.buildAuthorizeRequest
 import com.erpnext.pos.remoteSource.oauth.toBearerToken
 import com.erpnext.pos.remoteSource.oauth.toOAuthConfig
+import com.erpnext.pos.remoteSource.sdk.ERPDocType
+import com.erpnext.pos.remoteSource.sdk.Filter
+import com.erpnext.pos.remoteSource.sdk.Operator
+import com.erpnext.pos.remoteSource.sdk.filters
+import com.erpnext.pos.remoteSource.sdk.getERPList
+import com.erpnext.pos.remoteSource.sdk.getERPSingle
+import com.erpnext.pos.remoteSource.sdk.getFields
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.HttpClientEngine
@@ -22,7 +28,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 class APIService(
-    client: HttpClient,
+    private val client: HttpClient,
     private val store: TokenStore,
     private val authStore: AuthInfoStore
 ) {
@@ -43,7 +49,6 @@ class APIService(
                         )
                         store.save(
                             TokenResponse(
-                                url = current.url,
                                 access_token = refreshed.access_token,
                                 refresh_token = refreshed.refresh_token,
                                 id_token = refreshed.id_token,
@@ -63,23 +68,27 @@ class APIService(
         expectedState: String,
         returnedState: String
     ): TokenResponse {
-        require(expectedState == returnedState) { "CSRF state mismatch" }
-        val res = clientOAuth.post(oauthConfig.tokenUrl) {
-            contentType(ContentType.Application.FormUrlEncoded)
-            setBody(Parameters.build {
-                append("grant_type", "authorization_code")
-                append("code", code)
-                append("redirect_uri", oauthConfig.redirectUrl)
-                append("client_id", oauthConfig.clientId)
-                append("code_verifier", pkce.verifier)
-                // Si usas cliente confidencial (no PKCE en mobile), añade client_secret:
-                oauthConfig.clientSecret?.let { append("client_secret", it) }
-            }.formUrlEncode())
-        }.body<TokenResponse>()
+        try {
+            require(expectedState == returnedState) { "CSRF state mismatch" }
+            val res = client.post(oauthConfig.tokenUrl) {
+                contentType(ContentType.Application.FormUrlEncoded)
+                setBody(Parameters.build {
+                    append("grant_type", "authorization_code")
+                    append("code", code)
+                    append("redirect_uri", oauthConfig.redirectUrl)
+                    append("client_id", oauthConfig.clientId)
+                    append("code_verifier", pkce.verifier)
+                    // Si usas cliente confidencial (no PKCE en mobile), añade client_secret:
+                    oauthConfig.clientSecret?.let { append("client_secret", it) }
+                }.formUrlEncode())
+            }.body<TokenResponse>()
 
-        res.url = oauthConfig.baseUrl
-        store.save(res)
-        return res
+            store.save(res)
+            return res
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            return TokenResponse("", "", 0, "", "", "")
+        }
     }
 
     suspend fun refreshToken(refresh: String): TokenResponse {
@@ -89,7 +98,7 @@ class APIService(
             oauthConfig.url, oauthConfig.clientId, oauthConfig.clientSecret,
             oauthConfig.redirectUrl, listOf("all", "openid")
         )
-        return clientOAuth.post(config.tokenUrl) {
+        return client.post(config.tokenUrl) {
             contentType(ContentType.Application.FormUrlEncoded)
             setBody(Parameters.build {
                 append("grant_type", "refresh_token")
@@ -109,26 +118,21 @@ class APIService(
         store.clear()
     }
 
-    //TODO: Para los fields podriamos hacer un diccionario por cada DocType con los fields necesarios
-    suspend fun items(offset: Int): List<ItemDto> {
-        val url = authStore.getCurrentSite()
-        if (url.isNullOrEmpty())
-            throw Exception("URL Invalida")
-
-        return clientOAuth.getERPList<ItemDto>(
-            ERPDocType.Item.path,
+    suspend fun items(offset: Int, limit: Int): List<ItemDto> {
+        return clientOAuth.getERPList(
+            doctype = ERPDocType.Item.path,
             fields = ERPDocType.Item.getFields(),
-            filters = filters {
-                eq("disabled", false)
-            },
-            orderBy = "item_name", baseUrl = url,
-            limit = 15,
-            offset = offset
-        )
+            orderBy = "item_name",
+            baseUrl = authStore.getCurrentSite() ?: "",
+            offset = offset,
+            limit = limit
+        ) {
+            Filter("disabled", Operator.EQ, false)
+        }
     }
 
     suspend fun getCategories(): List<CategoryDto> {
-        val url = authStore.getCurrentSite()
+        val url = authStore.getCurrentSite() ?: ""
         return clientOAuth.getERPList(
             ERPDocType.Category.path,
             ERPDocType.Category.getFields(),

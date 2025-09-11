@@ -37,8 +37,11 @@ fun List<ItemDto>.toBO(): List<ItemBO> {
 fun ItemDto.toBO(): ItemBO {
     return ItemBO(
         name = this.name,
-        uom = this.uom,
+        uom = this.stockUom,
         image = this.image,
+        brand = this.brand,
+        itemGroup = this.itemGroup,
+        itemCode = this.itemCode,
         price = this.price,
         discount = this.discount,
         barcode = this.barcode,
@@ -51,7 +54,10 @@ fun ItemDto.toBO(): ItemBO {
 fun ItemEntity.toBO(): ItemBO {
     return ItemBO(
         name = this.name,
-        uom = this.uom,
+        uom = this.stockUom,
+        brand = this.brand,
+        itemGroup = this.itemGroup,
+        itemCode = this.itemCode,
         image = this.image,
         price = this.price,
         discount = this.discount,

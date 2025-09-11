@@ -6,13 +6,14 @@ import com.erpnext.pos.views.login.Site
 import io.ktor.client.plugins.auth.providers.*
 import kotlinx.coroutines.flow.Flow
 
+
 fun TokenResponse?.toBearerToken(): BearerTokens? {
     if (this == null) return null
     return BearerTokens(this.access_token, this.refresh_token)
 }
 
 interface TokenStore {
-    fun load(): TokenResponse?
+    suspend fun load(): TokenResponse?
     suspend fun save(tokens: TokenResponse)
     suspend fun clear()
 
@@ -21,11 +22,11 @@ interface TokenStore {
 }
 
 interface AuthInfoStore {
-    fun loadAuthInfo(): MutableList<LoginInfo>
-    fun loadAuthInfoByUrl(url: String? = null): LoginInfo
-    fun saveAuthInfo(info: LoginInfo)
-    fun getCurrentSite(): String?
-    fun clearAuthInfo()
+    suspend fun loadAuthInfo(): MutableList<LoginInfo>
+    suspend fun loadAuthInfoByUrl(url: String? = null): LoginInfo
+    suspend fun saveAuthInfo(info: LoginInfo)
+    suspend fun getCurrentSite(): String?
+    suspend fun clearAuthInfo()
 }
 
 /**

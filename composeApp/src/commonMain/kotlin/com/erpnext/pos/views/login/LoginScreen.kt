@@ -42,6 +42,10 @@ fun LoginScreen(
 ) {
     var siteUrl by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        actions.existingSites()
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
@@ -77,7 +81,7 @@ fun LoginScreen(
             }
 
             is LoginState.Success -> {
-                val sites = actions.existingSites()
+                val sites = state.sites
                 if (!sites.isNullOrEmpty()) {
                     Text(
                         text = "Selecciona un sitio existente",
@@ -247,7 +251,7 @@ fun UrlInputField(
 fun LoginPreview() {
     AppTheme {
         LoginScreen(
-            state = LoginState.Success,
+            state = LoginState.Success(emptyList()),
             actions = LoginAction()
         )
     }

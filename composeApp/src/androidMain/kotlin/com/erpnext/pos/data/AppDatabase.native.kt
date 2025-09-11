@@ -8,6 +8,7 @@ actual class DatabaseBuilder(private val context: Context) {
         Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "app_database"
-        ).build()
+            "app_database",
+        ).fallbackToDestructiveMigration(false)
+            .build()
 }

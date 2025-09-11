@@ -9,8 +9,9 @@ fun List<ItemDto>.toEntity(): List<ItemEntity> {
 
 fun ItemDto.toEntity(): ItemEntity {
     return ItemEntity(
-        id = this.id,
         name = this.name,
+        itemCode = this.itemCode,
+        itemGroup = this.itemGroup,
         description = this.description,
         barcode = this.barcode,
         image = this.image,
@@ -18,6 +19,7 @@ fun ItemDto.toEntity(): ItemEntity {
         discount = this.discount,
         isService = this.isService,
         isStocked = this.isStocked,
-        uom = this.uom
+        stockUom = this.stockUom,
+        brand = this.brand,
     )
 }

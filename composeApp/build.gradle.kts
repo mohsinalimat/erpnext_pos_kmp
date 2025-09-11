@@ -2,6 +2,15 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import java.io.FileInputStream
+import java.util.Properties
+
+val properties = Properties()
+try {
+    properties.load(FileInputStream(rootProject.file("gradle.properties")))
+} catch (e: Exception) {
+    e.printStackTrace()
+}
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -82,6 +91,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.plugin.auth)
+            implementation(libs.ktor.plugin.logging)
 
             implementation(libs.koin.compose)
             implementation(libs.koin.core)
@@ -127,27 +137,33 @@ buildkonfig {
 
     // default config is required
     defaultConfigs {
-        buildConfigField(STRING, "BASE_URL", "BASE_URL")
-        buildConfigField(STRING, "CLIENT_ID", "CLIENT_ID")
-        buildConfigField(STRING, "CLIENT_SECRET", "CLIENT_SECRET")
-        buildConfigField(STRING, "REDIRECT_URI", "REDIRECT_URI")
+        buildConfigField(STRING, "BASE_URL", properties["BASE_URL"].toString().replace("\"", ""))
+        buildConfigField(STRING, "CLIENT_ID", properties["CLIENT_ID"].toString().replace("\"", ""))
+        buildConfigField(
+            STRING,
+            "CLIENT_SECRET",
+            properties["CLIENT_SECRET"].toString().replace("\"", "")
+        )
+        buildConfigField(
+            STRING,
+            "REDIRECT_URI",
+            properties["REDIRECT_URL"].toString().replace("\"", "")
+        )
     }
 
-    targetConfigs { // dev target to pass BuildConfig to iOS
-        create("ios") {
-        }
-    }
-
-    targetConfigs("staging") {
-        create("android") {
-            buildConfigField(STRING, "BASE_URL", "BASE_URL")
-            buildConfigField(STRING, "CLIENT_ID", "CLIENT_ID")
-            buildConfigField(STRING, "CLIENT_SECRET", "CLIENT_SECRET")
-            buildConfigField(STRING, "REDIRECT_URI", "REDIRECT_URI")
-        }
-
-        create("ios") {
-        }
+    defaultConfigs("staging") {
+        buildConfigField(STRING, "BASE_URL", properties["BASE_URL"].toString().replace("\"", ""))
+        buildConfigField(STRING, "CLIENT_ID", properties["CLIENT_ID"].toString().replace("\"", ""))
+        buildConfigField(
+            STRING,
+            "CLIENT_SECRET",
+            properties["CLIENT_SECRET"].toString().replace("\"", "")
+        )
+        buildConfigField(
+            STRING,
+            "REDIRECT_URI",
+            properties["REDIRECT_URL"].toString().replace("\"", "")
+        )
     }
 }
 
