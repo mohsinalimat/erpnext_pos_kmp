@@ -1,18 +1,26 @@
 package com.erpnext.pos.di
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.room.Room
-import androidx.room.RoomDatabase
 import com.erpnext.pos.data.AppDatabase
 import com.erpnext.pos.data.DatabaseBuilder
 import com.erpnext.pos.data.repositories.InventoryRepository
+import com.erpnext.pos.data.repositories.POSProfileRepository
+import com.erpnext.pos.data.repositories.UserRepository
 import com.erpnext.pos.domain.repositories.IInventoryRepository
+import com.erpnext.pos.domain.repositories.IPOSRepository
+import com.erpnext.pos.domain.repositories.IUserRepository
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
+import com.erpnext.pos.domain.usecases.FetchPosProfileUseCase
+import com.erpnext.pos.domain.usecases.FetchUserInfoUseCase
 import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
 import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
+import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
+import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
+import com.erpnext.pos.views.home.HomeViewModel
+import com.erpnext.pos.views.home.POSProfileViewModel
 import com.erpnext.pos.views.inventory.InventoryViewModel
 import com.erpnext.pos.views.login.LoginViewModel
 import com.erpnext.pos.views.splash.SplashViewModel
@@ -21,7 +29,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.http.parametersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -88,9 +95,23 @@ val appModule = module {
     single { InventoryViewModel(get(), get(), get()) }
     //endregion
 
+    //region POS Profile
+    single { POSProfileRemoteSource(get(), get()) }
+    single<IPOSRepository> { POSProfileRepository(get()) }
+    single { POSProfileViewModel(get(), get(), get()) }
+    //endregion
+
+    //region Home
+    single { UserRemoteSource(get(), get()) }
+    single { HomeViewModel(get(), get(), get()) }
+    single<IUserRepository> { UserRepository(get()) }
+    //endregion
+
     //region UseCases DI
     single { FetchInventoryItemUseCase(get()) }
     single { FetchCategoriesUseCase(get()) }
+    single { FetchPosProfileUseCase(get()) }
+    single { FetchUserInfoUseCase(get()) }
     //endregion
 }
 

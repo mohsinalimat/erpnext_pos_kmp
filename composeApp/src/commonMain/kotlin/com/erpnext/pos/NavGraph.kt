@@ -7,11 +7,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.erpnext.pos.navigation.NavRoute
-import com.erpnext.pos.views.HomeScreen
-import com.erpnext.pos.views.inventory.InventoryScreen
+import com.erpnext.pos.views.home.HomeScreen
 import com.erpnext.pos.views.InvoiceListScreen
 import com.erpnext.pos.views.customer.CustomerDetailScreen
 import com.erpnext.pos.views.customer.CustomerListScreen
+import com.erpnext.pos.views.home.HomeRoute
 import com.erpnext.pos.views.inventory.InventoryRoute
 import com.erpnext.pos.views.login.LoginRoute
 import com.erpnext.pos.views.splash.SplashRoute
@@ -32,7 +32,7 @@ object NavGraph {
                 LoginRoute()
             }
             composable(NavRoute.Home.path) {
-                HomeScreen()
+                HomeRoute()
             }
             composable(NavRoute.Inventory.path) {
                 InventoryRoute()

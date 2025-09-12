@@ -33,54 +33,39 @@ class InventoryRemoteMediator(
             val offset = when (loadType) {
                 LoadType.REFRESH -> 0
                 LoadType.PREPEND -> {
-                    // ERPNext no soporta prepend hacia atrás
                     return@withContext MediatorResult.Success(endOfPaginationReached = true)
                 }
                 LoadType.APPEND -> {
-                    // ← aquí está el cambio crítico:
-                    // No uses `state.pages.sumOf { it.data.size }` — usa el conteo real en DB
                     val countInDb = itemDao.countAll()
-                    // Debug log
                     println("RemoteMediator: APPEND - countInDb=$countInDb (usado como limit_start)")
                     countInDb
                 }
             }
 
-            // Llamada a ERPNext con limit_start = offset y limit_page_length = pageSize
             val itemsDto = apiService.items(
                 offset = offset,
                 limit = pageSize
             )
 
-            // Map DTO -> Entities (asegurate que toEntity() convierte LISTA completa)
             val entities = itemsDto.toEntity()
-
-            // Consideramos que llegamos al final si la lista devuelta es vacía o menor que pageSize
             val endOfPaginationReached = entities.isEmpty() || entities.size < pageSize
 
-            // Guardado inteligente en DB
             when (loadType) {
                 LoadType.REFRESH -> {
                     if (!preserveCacheOnEmptyRefresh || entities.isNotEmpty()) {
-                        // Reemplazamos la cache (clear + insert) cuando:
-                        //  - no queremos preservar cache si empty, o
-                        //  - la API devolvió algo (insertamos)
                         itemDao.deleteAll()
                         if (entities.isNotEmpty()) itemDao.addItems(entities)
                     } else {
-                        // preserveCacheOnEmptyRefresh == true && entities.isEmpty() -> mantenemos cache
                         println("RemoteMediator: REFRESH returned empty, preserving local cache")
                     }
                 }
                 else -> {
-                    // APPEND -> insert incremental
                     if (entities.isNotEmpty()) {
                         itemDao.addItems(entities)
                     }
                 }
             }
 
-            // Debug final: cuantos hay ahora
             val totalAfter = itemDao.countAll()
             println("RemoteMediator: loadType=$loadType | offset=$offset | fetched=${entities.size} | totalInDb=$totalAfter")
 

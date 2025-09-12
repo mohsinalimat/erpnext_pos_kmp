@@ -9,7 +9,7 @@ fun UserDto.toEntity(): UserEntity {
         firstName = this.firstName,
         lastName = this.lastName,
         username = this.username,
-        mobileNo = this.mobileNo,
+        language = this.language,
         email = this.email,
         enabled = this.enabled
     )

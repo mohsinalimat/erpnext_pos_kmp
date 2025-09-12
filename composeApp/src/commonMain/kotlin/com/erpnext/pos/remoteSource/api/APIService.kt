@@ -4,7 +4,9 @@ import com.erpnext.pos.BuildKonfig
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.dto.LoginInfo
+import com.erpnext.pos.remoteSource.dto.POSProfileDto
 import com.erpnext.pos.remoteSource.dto.TokenResponse
+import com.erpnext.pos.remoteSource.dto.UserDto
 import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
 import com.erpnext.pos.remoteSource.oauth.OAuthConfig
 import com.erpnext.pos.remoteSource.oauth.Pkce
@@ -109,6 +111,23 @@ class APIService(
         }.body()
     }
 
+    suspend fun getUserInfo(): UserDto {
+        val url = authStore.getCurrentSite()
+        if (url.isNullOrEmpty())
+            throw Exception("URL Invalida")
+
+        val userId = store.loadUser()
+
+        if (userId.isNullOrEmpty())
+            throw Exception("Usuario Invalido")
+
+        return clientOAuth.getERPSingle(
+            ERPDocType.User.path,
+            userId,
+            url
+        )
+    }
+
     suspend fun revoke(accessToken: String) {
         val oAuthConfig = authStore.loadAuthInfoByUrl().toOAuthConfig()
         clientOAuth.post(oAuthConfig.revokeUrl) {
@@ -149,6 +168,20 @@ class APIService(
             doctype = ERPDocType.Item.path,
             name = itemId,
             baseUrl = url
+        )
+    }
+
+    suspend fun getPOSProfileInfo(): List<POSProfileDto> {
+        val url = authStore.getCurrentSite()
+        if (url.isNullOrEmpty())
+            throw Exception("URL Invalida")
+        return clientOAuth.getERPList(
+            doctype = ERPDocType.POSProfile.path,
+            fields = ERPDocType.POSProfile.getFields(),
+            baseUrl = url,
+            filters = filters {
+                Filter("disabled", Operator.EQ, false)
+            }
         )
     }
 

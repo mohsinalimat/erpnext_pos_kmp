@@ -9,7 +9,7 @@ import com.erpnext.pos.localSource.entities.UserEntity
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addUsers(user: UserEntity)
+    suspend fun addUser(user: UserEntity)
 
     @Query("SELECT * FROM tabUser WHERE name = :userId")
     suspend fun getUserInfo(userId: String): UserEntity

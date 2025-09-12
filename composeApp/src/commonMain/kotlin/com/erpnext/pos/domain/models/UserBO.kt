@@ -2,5 +2,10 @@ package com.erpnext.pos.domain.models
 
 data class UserBO(
     val name: String,
-    val phone: String,
+    val username: String,
+    val firstName: String,
+    val lastName: String,
+    val email: String,
+    val language: String,
+    val enabled: Boolean
 )

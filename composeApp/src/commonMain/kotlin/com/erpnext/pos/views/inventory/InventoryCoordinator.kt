@@ -26,6 +26,10 @@ class InventoryCoordinator(
         viewModel.getItemDetail(itemId)
     }
 
+    fun filter(category: String, query: String) {
+        viewModel.filter(category, query)
+    }
+
     fun onRefresh() {
         viewModel.refresh()
     }

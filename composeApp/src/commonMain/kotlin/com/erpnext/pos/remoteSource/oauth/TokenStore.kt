@@ -14,6 +14,7 @@ fun TokenResponse?.toBearerToken(): BearerTokens? {
 
 interface TokenStore {
     suspend fun load(): TokenResponse?
+    suspend fun loadUser(): String?
     suspend fun save(tokens: TokenResponse)
     suspend fun clear()
 

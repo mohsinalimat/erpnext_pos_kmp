@@ -5,11 +5,14 @@ data class DocTypeFields(val doctype: ERPDocType, val fields: List<String>)
 enum class ERPDocType(val path: String) {
     Item("Item"),
     Category("Item Group"),
+    User("User"),
     Bin("Bin"),
     Customer("Customer"),
     SalesInvoice("Sales Invoice"),
     PurchaseInvoice("Purchase Invoice"),
-    StockEntry("Stock Entry")
+    StockEntry("Stock Entry"),
+    POSProfile("POS Profile"),
+    POSProfileEntry("POS Profile Entry")
 }
 
 val fields: List<DocTypeFields> = listOf(
@@ -30,6 +33,23 @@ val fields: List<DocTypeFields> = listOf(
     ),
     DocTypeFields(
         ERPDocType.Category, listOf("name")
+    ),
+    DocTypeFields(
+        ERPDocType.POSProfile, listOf(
+            "name", "company",
+            "customer", "disabled", "currency", "warehouse", "country"
+        )
+    ),
+    DocTypeFields(
+        ERPDocType.User,
+        listOf(
+            "name",
+            "first_name",
+            "last_name",
+            "username",
+            "language",
+            "full_name"
+        )
     )
 )
 

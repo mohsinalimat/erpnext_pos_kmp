@@ -5,10 +5,12 @@ import androidx.paging.PagingSource
 import androidx.paging.map
 import com.erpnext.pos.domain.models.CategoryBO
 import com.erpnext.pos.domain.models.ItemBO
+import com.erpnext.pos.domain.models.POSProfileBO
 import com.erpnext.pos.domain.models.UserBO
 import com.erpnext.pos.localSource.entities.ItemEntity
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
+import com.erpnext.pos.remoteSource.dto.POSProfileDto
 import com.erpnext.pos.remoteSource.dto.UserDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
@@ -25,7 +27,12 @@ fun Flow<PagingData<ItemEntity>>.toPagingBO(): Flow<PagingData<ItemBO>> {
 fun UserDto.toBO(): UserBO {
     return UserBO(
         name = this.name,
-        phone = this.mobileNo,
+        username = this.username,
+        firstName = this.firstName,
+        lastName = this.lastName,
+        email = this.email,
+        language = this.language,
+        enabled = this.enabled
     )
 }
 
@@ -76,5 +83,21 @@ fun List<CategoryDto>.toBO(): List<CategoryBO> {
 fun CategoryDto.toBO(): CategoryBO {
     return CategoryBO(
         name = this.name,
+    )
+}
+
+fun List<POSProfileDto>.toBO(): List<POSProfileBO> {
+    return this.map { it.toBO() }
+}
+
+@JvmName("toProfileDtoToBO")
+fun POSProfileDto.toBO(): POSProfileBO {
+    return POSProfileBO(
+        name = this.profileName,
+        warehouse = this.warehouse,
+        country = this.country,
+        disabled = this.disabled,
+        company = this.company,
+        currency = this.currency
     )
 }

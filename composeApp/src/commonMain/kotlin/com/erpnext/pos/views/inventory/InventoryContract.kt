@@ -20,5 +20,6 @@ data class InventoryAction(
     val onClearSearch: () -> Unit = {},
     val fetchAll: () -> Unit = { },
     val getDetails: (String) -> Unit = { },
+    val filter: (String, String) -> Unit = { _, _ -> },
     val onError: (error: String) -> Unit = {}
 )

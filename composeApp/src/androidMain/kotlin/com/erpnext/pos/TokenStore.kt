@@ -11,6 +11,7 @@ import androidx.security.crypto.MasterKey
 import com.erpnext.pos.remoteSource.dto.LoginInfo
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
+import com.erpnext.pos.utils.TokenUtils.decodePayload
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.sync.Mutex
@@ -38,11 +39,16 @@ class AndroidTokenStore(private val context: Context) : TokenStore, TransientAut
 
     override suspend fun save(tokens: TokenResponse) {
         clear()
+        if (tokens.id_token.isNullOrEmpty()) return
+        val claims = decodePayload(tokens.id_token)
+        val userId = claims?.get("email").toString()
+
         prefs.edit {
             putString(stringKey("access_token"), tokens.access_token)
             putString(stringKey("refresh_token"), tokens.refresh_token)
             putString(stringKey("id_token"), tokens.id_token)
             putLong(stringKey("expires_in"), tokens.expires_in ?: 0L)
+            putString(stringKey("userId"), userId)
             apply()
         }
         stateFlow.value = tokens
@@ -58,6 +64,10 @@ class AndroidTokenStore(private val context: Context) : TokenStore, TransientAut
         )
         stateFlow.value = tokens
         tokens
+    }
+
+    override suspend fun loadUser(): String? {
+        return prefs.getString(stringKey("userId"), null)
     }
 
     override suspend fun loadAuthInfoByUrl(url: String?): LoginInfo {

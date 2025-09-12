@@ -77,7 +77,6 @@ fun InventoryScreen(
     )
     val gridState = rememberLazyGridState()
 
-    // Una lógica de scroll más precisa para ocultar/mostrar (como en Material Design)
     var previousFirstVisibleItem by remember { mutableStateOf(0) }
     var isFabReallyVisibleBasedOnScroll by remember { mutableStateOf(true) }
 
@@ -99,12 +98,8 @@ fun InventoryScreen(
         else -> false
     }
 
-    // Determinar si los filtros deben tener sombra/elevación
-    // Se considera "scrolled" si el primer item no es visible o si tiene un offset de scroll
-    // Determinar si el contenido se ha desplazado bajo los filtros
     val isContentScrolledUnderFilters by remember {
         derivedStateOf {
-            // Log para depurar el estado del grid
             print("InventoryScreen - GridState: firstVisibleItemIndex=${gridState.firstVisibleItemIndex}, firstVisibleItemScrollOffset=${gridState.firstVisibleItemScrollOffset}")
             gridState.firstVisibleItemIndex > 0 || gridState.firstVisibleItemScrollOffset > 0
         }
@@ -114,7 +109,6 @@ fun InventoryScreen(
         targetValue = if (isContentScrolledUnderFilters) 4.dp else 0.dp,
         label = "filterElevation"
     )
-
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }

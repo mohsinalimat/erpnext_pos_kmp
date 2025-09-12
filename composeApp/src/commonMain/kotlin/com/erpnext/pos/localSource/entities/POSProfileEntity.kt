@@ -7,12 +7,23 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "tabPosProfile")
 data class POSProfileEntity(
     @PrimaryKey(autoGenerate = false)
-
     @ColumnInfo(name = "profile_name")
     val profileName: String,
 
     @ColumnInfo(name = "warehouse")
     val warehouse: String,
+
+    @ColumnInfo(name = "country")
+    val country: String,
+
+    @ColumnInfo(name = "disabled")
+    val disabled: Boolean,
+
+    @ColumnInfo(name = "company")
+    val company: String,
+
+    @ColumnInfo(name = "default_currency")
+    val defaultCurrency: String,
 
     // Sales config
     @ColumnInfo(name = "customer_group")

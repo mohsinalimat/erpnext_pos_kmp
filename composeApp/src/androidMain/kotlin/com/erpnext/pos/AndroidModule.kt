@@ -16,4 +16,6 @@ val androidModule = module {
     single<AuthNavigator> { AndroidAuthNavigator() }
     single { (builder: DatabaseBuilder) -> builder.build() }
     single { get<AppDatabase>().itemDao() }
+    single { get<AppDatabase>().userDao() }
+    single { get<AppDatabase>().posProfileDao() }
 }
