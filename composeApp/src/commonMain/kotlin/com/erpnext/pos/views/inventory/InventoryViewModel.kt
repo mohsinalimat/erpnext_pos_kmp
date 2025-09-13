@@ -1,5 +1,8 @@
 package com.erpnext.pos.views.inventory
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.erpnext.pos.base.BaseViewModel
@@ -7,9 +10,13 @@ import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
 import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.dto.ItemDto
+import com.erpnext.pos.views.CashBoxManager
+import com.erpnext.pos.views.CashBoxState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class InventoryViewModel(
     private val navManager: NavigationManager,
@@ -21,11 +28,23 @@ class InventoryViewModel(
         MutableStateFlow(InventoryState.Loading)
     val stateFlow = _stateFlow.asStateFlow()
 
-    fun fetchAllItems() {
+    init {
+        viewModelScope.launch {
+            CashBoxManager.cashboxState.collectLatest { state ->
+                val warehouse = (state as? CashBoxState.Opened)?.warehouse
+                if (warehouse != null) {
+
+                }
+            }
+        }
+    }
+
+
+    fun fetchAllItems(warehouseId: String? = null) {
         _stateFlow.update { InventoryState.Loading }
         executeUseCase(
             action = {
-                val items = fetchInventoryItemUseCase.invoke(null)
+                val items = fetchInventoryItemUseCase.invoke(warehouseId ?: "")
                     .cachedIn(viewModelScope)
                 _stateFlow.update { InventoryState.Success(items) }
             },

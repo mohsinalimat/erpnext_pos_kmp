@@ -4,7 +4,9 @@ import com.erpnext.pos.BuildKonfig
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.dto.LoginInfo
+import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
+import com.erpnext.pos.remoteSource.dto.POSProfileSimpleDto
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.dto.UserDto
 import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
@@ -20,6 +22,7 @@ import com.erpnext.pos.remoteSource.sdk.filters
 import com.erpnext.pos.remoteSource.sdk.getERPList
 import com.erpnext.pos.remoteSource.sdk.getERPSingle
 import com.erpnext.pos.remoteSource.sdk.getFields
+import com.erpnext.pos.remoteSource.sdk.postERP
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.HttpClientEngine
@@ -137,7 +140,7 @@ class APIService(
         store.clear()
     }
 
-    suspend fun items(offset: Int, limit: Int): List<ItemDto> {
+    suspend fun items(warehouse: String, offset: Int, limit: Int): List<ItemDto> {
         return clientOAuth.getERPList(
             doctype = ERPDocType.Item.path,
             fields = ERPDocType.Item.getFields(),
@@ -146,6 +149,7 @@ class APIService(
             offset = offset,
             limit = limit
         ) {
+            Filter("warehouse", Operator.EQ, warehouse)
             Filter("disabled", Operator.EQ, false)
         }
     }
@@ -171,10 +175,26 @@ class APIService(
         )
     }
 
-    suspend fun getPOSProfileInfo(): List<POSProfileDto> {
+    suspend fun openCashbox(pos: POSOpeningEntryDto) {
         val url = authStore.getCurrentSite()
-        if (url.isNullOrEmpty())
-            throw Exception("URL Invalida")
+        return clientOAuth.postERP(
+            ERPDocType.POSProfileEntry.path,
+            pos,
+            url
+        )
+    }
+
+    suspend fun getPOSProfileDetails(profileId: String): POSProfileDto {
+        val url = authStore.getCurrentSite()
+        return clientOAuth.getERPSingle(
+            doctype = ERPDocType.POSProfile.path,
+            name = profileId.encodeURLParameter(),
+            baseUrl = url
+        )
+    }
+
+    suspend fun getPOSProfiles(): List<POSProfileSimpleDto> {
+        val url = authStore.getCurrentSite()
         return clientOAuth.getERPList(
             doctype = ERPDocType.POSProfile.path,
             fields = ERPDocType.POSProfile.getFields(),

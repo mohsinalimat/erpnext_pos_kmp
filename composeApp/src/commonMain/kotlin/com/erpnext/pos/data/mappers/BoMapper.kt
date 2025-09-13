@@ -6,11 +6,14 @@ import androidx.paging.map
 import com.erpnext.pos.domain.models.CategoryBO
 import com.erpnext.pos.domain.models.ItemBO
 import com.erpnext.pos.domain.models.POSProfileBO
+import com.erpnext.pos.domain.models.PaymentModesBO
 import com.erpnext.pos.domain.models.UserBO
 import com.erpnext.pos.localSource.entities.ItemEntity
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
+import com.erpnext.pos.remoteSource.dto.POSProfileSimpleDto
+import com.erpnext.pos.remoteSource.dto.PaymentModesDto
 import com.erpnext.pos.remoteSource.dto.UserDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
@@ -22,6 +25,34 @@ fun Flow<PagingData<ItemEntity>>.toPagingBO(): Flow<PagingData<ItemBO>> {
             it.toBO()
         })
     }
+}
+
+@JvmName("toBOPaymentModesDto")
+fun List<PaymentModesDto>.toBO(): List<PaymentModesBO> {
+    return this.map { it.toBO() }
+}
+
+fun PaymentModesDto.toBO(): PaymentModesBO {
+    return PaymentModesBO(
+        name = this.name,
+        modeOfPayment = this.modeOfPayment
+    )
+}
+
+fun List<POSProfileSimpleDto>.toBO(): List<POSProfileBO> {
+    return this.map { it.toBO() }
+}
+
+fun POSProfileSimpleDto.toBO(): POSProfileBO {
+    return POSProfileBO(
+        name = this.profileName,
+        warehouse = this.warehouse,
+        country = this.country,
+        disabled = this.disabled,
+        company = this.company,
+        currency = this.currency,
+        paymentModes = emptyList()
+    )
 }
 
 fun UserDto.toBO(): UserBO {
@@ -86,10 +117,6 @@ fun CategoryDto.toBO(): CategoryBO {
     )
 }
 
-fun List<POSProfileDto>.toBO(): List<POSProfileBO> {
-    return this.map { it.toBO() }
-}
-
 @JvmName("toProfileDtoToBO")
 fun POSProfileDto.toBO(): POSProfileBO {
     return POSProfileBO(
@@ -98,6 +125,7 @@ fun POSProfileDto.toBO(): POSProfileBO {
         country = this.country,
         disabled = this.disabled,
         company = this.company,
-        currency = this.currency
+        currency = this.currency,
+        paymentModes = this.payments.toBO(),
     )
 }

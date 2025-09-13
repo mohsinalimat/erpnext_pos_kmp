@@ -25,10 +25,10 @@ suspend inline fun <reified T> HttpClient.getERPList(
     offset: Int = 0,
     orderBy: String? = null,
     orderType: String = "desc",
-    baseUrl: String,
+    baseUrl: String?,
     additionalHeaders: Map<String, String> = emptyMap()
 ): List<T> {
-    require(baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
 
     val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}"
 
@@ -98,10 +98,12 @@ suspend inline fun <reified T> HttpClient.getERPList(
     offset: Int = 0,
     orderBy: String? = null,
     orderType: String = "desc",
-    baseUrl: String,
+    baseUrl: String?,
     additionalHeaders: Map<String, String> = emptyMap(),
     block: (FiltersBuilder.() -> Unit)
 ): List<T> {
+    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+
     val builtFilters = FiltersBuilder().apply(block).build()
     return getERPList(
         doctype = doctype,
@@ -119,12 +121,12 @@ suspend inline fun <reified T> HttpClient.getERPList(
 suspend inline fun <reified T> HttpClient.getERPSingle(
     doctype: String,
     name: String,
-    baseUrl: String,
+    baseUrl: String?,
     additionalHeaders: Map<String, String> = emptyMap()
 ): T {
-    val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}/${
-        encodeURIComponent(name)
-    }"
+    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+
+    val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}/$name"
 
     val response: HttpResponse = this.get {
         url { takeFrom(endpoint) }
@@ -158,9 +160,11 @@ suspend inline fun <reified T> HttpClient.getERPSingle(
 suspend inline fun <reified T, reified R> HttpClient.postERP(
     doctype: String,
     payload: T,
-    baseUrl: String,
+    baseUrl: String?,
     additionalHeaders: Map<String, String> = emptyMap()
 ): R {
+    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+
     val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}"
     val bodyText = this.post {
         url { takeFrom(endpoint) }
@@ -186,9 +190,11 @@ suspend inline fun <reified T, reified R> HttpClient.putERP(
     doctype: String,
     name: String,
     payload: T,
-    baseUrl: String,
+    baseUrl: String?,
     additionalHeaders: Map<String, String> = emptyMap()
 ): R {
+    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+
     val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}/${
         encodeURIComponent(name)
     }"
@@ -215,9 +221,11 @@ suspend inline fun <reified T, reified R> HttpClient.putERP(
 suspend fun HttpClient.deleteERP(
     doctype: String,
     name: String,
-    baseUrl: String,
+    baseUrl: String?,
     additionalHeaders: Map<String, String> = emptyMap()
 ) {
+    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+
     val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}/${
         encodeURIComponent(name)
     }"

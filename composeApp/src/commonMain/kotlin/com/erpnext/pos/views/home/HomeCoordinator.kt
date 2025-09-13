@@ -3,6 +3,7 @@ package com.erpnext.pos.views.home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.erpnext.pos.domain.models.POSProfileBO
+import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 import org.koin.compose.koinInject
 
 class HomeCoordinator(
@@ -12,6 +13,10 @@ class HomeCoordinator(
 
     fun loadUserInfo() {
         return viewModel.loadUserInfo()
+    }
+
+    fun initialState() {
+        viewModel.resetToInitialState()
     }
 
     fun loadPOSProfile() {
@@ -28,6 +33,18 @@ class HomeCoordinator(
 
     fun onPosSelected(pos: POSProfileBO) {
         viewModel.onPosSelected(pos)
+    }
+
+    fun openCashbox(entry: POSOpeningEntryDto) {
+        viewModel.openCashbox(entry)
+    }
+
+    fun closeCashbox() {
+        viewModel.closeCashbox()
+    }
+
+    fun isCashboxOpen(): Boolean {
+        return viewModel.isCashboxOpen()
     }
 }
 

@@ -1,24 +1,38 @@
 package com.erpnext.pos.remoteSource.datasources
 
 import com.erpnext.pos.localSource.dao.POSProfileDao
+import com.erpnext.pos.localSource.dao.PaymentModesDao
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
-import com.erpnext.pos.remoteSource.dto.POSProfileEntryDto
+import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
+import com.erpnext.pos.remoteSource.dto.POSProfileSimpleDto
 import com.erpnext.pos.remoteSource.mapper.toEntity
 
 class POSProfileRemoteSource(
     private val api: APIService,
-    private val posProfileDao: POSProfileDao
+    private val posProfileDao: POSProfileDao,
+    private val paymentModesDao: PaymentModesDao
 ) {
-    suspend fun getPOSProfileInfo(): List<POSProfileDto> {
-        val profiles = api.getPOSProfileInfo()
-        if (profiles.isNotEmpty()) {
-            posProfileDao.insertAll(profiles.toEntity())
-        }
+    suspend fun getPOSProfile(): List<POSProfileSimpleDto> {
+        return api.getPOSProfiles()
+    }
+
+    //TODO: Tengo que crear una tabla para poder guardar el estado actual de la caja, la informacion seria
+    // status, profileId, warehouseId, userId
+    suspend fun getPOSProfileDetails(profileId: String): POSProfileDto {
+        val profiles = api.getPOSProfileDetails(profileId)
+        posProfileDao.insertAll(listOf(profiles.toEntity()))
+        paymentModesDao.insertAll(profiles.payments.toEntity())
         return profiles
     }
 
-    suspend fun openCashBox(data: POSProfileEntryDto) {
-        api.openCashBox(data)
+    //TODO: Pausado hasta que tengamos formada toda la info necesaria para abrir caja
+    suspend fun openCashBox(data: POSOpeningEntryDto) {
+        api.openCashbox(data)
+    }
+
+    //TODO: Work in Progress
+    suspend fun closeCashbox(data: Any) {
+        //api.closeCashbox(data)
     }
 }

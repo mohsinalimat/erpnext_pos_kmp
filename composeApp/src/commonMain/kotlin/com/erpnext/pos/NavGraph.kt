@@ -44,18 +44,18 @@ object NavGraph {
                 CustomerListScreen(
                     onNavigate = { navController.navigate(NavRoute.Customer.path) },
                     onCustomerClick = { customer ->
-                        navController.navigate("${NavRoute.CustomerDetail.path}/${customer.id}")
+                        //navController.navigate("${NavRoute.CustomerDetail.path}/${customer.id}")
                     }
                 )
             }
-            composable("${NavRoute.CustomerDetail.path}/{customerId}") { backStackEntry ->
+            /*composable("${NavRoute.CustomerDetail.path}/{customerId}") { backStackEntry ->
                 //val customerId = backStackEntry.path<String>("customerId") ?: ""
                 CustomerDetailScreen(
                     //  customerId = customerId ?: "",
                     customerId = "1",
                     onBackClick = { navController.popBackStack() }
                 )
-            }
+            }*/
             composable(NavRoute.Credits.path) {
                 InvoiceListScreen(onNavigate = { navController.navigate(NavRoute.Customer.path) })
             }

@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 class FetchInventoryItemUseCase(
     private val repo: IInventoryRepository
-) : UseCase<Unit?, Flow<PagingData<ItemBO>>>() {
-    override suspend fun useCaseFunction(input: Unit?): Flow<PagingData<ItemBO>> {
-        return repo.getItems()
+) : UseCase<String, Flow<PagingData<ItemBO>>>() {
+    override suspend fun useCaseFunction(input: String): Flow<PagingData<ItemBO>> {
+        return repo.getItems(input)
     }
 }

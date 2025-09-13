@@ -6,5 +6,11 @@ data class POSProfileBO(
     val country: String = "",
     val disabled: Boolean = false,
     val company: String = "",
-    val currency: String = ""
+    val currency: String = "",
+    val paymentModes: List<PaymentModesBO>
+)
+
+data class PaymentModesBO(
+    val name: String,
+    val modeOfPayment: String
 )

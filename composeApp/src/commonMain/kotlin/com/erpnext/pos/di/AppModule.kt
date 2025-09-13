@@ -11,6 +11,7 @@ import com.erpnext.pos.domain.repositories.IPOSRepository
 import com.erpnext.pos.domain.repositories.IUserRepository
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
+import com.erpnext.pos.domain.usecases.FetchPosProfileInfoUseCase
 import com.erpnext.pos.domain.usecases.FetchPosProfileUseCase
 import com.erpnext.pos.domain.usecases.FetchUserInfoUseCase
 import com.erpnext.pos.navigation.NavigationManager
@@ -96,14 +97,14 @@ val appModule = module {
     //endregion
 
     //region POS Profile
-    single { POSProfileRemoteSource(get(), get()) }
+    single { POSProfileRemoteSource(get(), get(), get()) }
     single<IPOSRepository> { POSProfileRepository(get()) }
     single { POSProfileViewModel(get(), get(), get()) }
     //endregion
 
     //region Home
     single { UserRemoteSource(get(), get()) }
-    single { HomeViewModel(get(), get(), get()) }
+    single { HomeViewModel(get(), get(), get(), get()) }
     single<IUserRepository> { UserRepository(get()) }
     //endregion
 
@@ -111,14 +112,13 @@ val appModule = module {
     single { FetchInventoryItemUseCase(get()) }
     single { FetchCategoriesUseCase(get()) }
     single { FetchPosProfileUseCase(get()) }
+    single { FetchPosProfileInfoUseCase(get()) }
     single { FetchUserInfoUseCase(get()) }
     //endregion
 }
 
 fun initKoin(
-    config: KoinAppDeclaration? = null,
-    modules: List<Module> = listOf(),
-    builder: DatabaseBuilder
+    config: KoinAppDeclaration? = null, modules: List<Module> = listOf(), builder: DatabaseBuilder
 ) {
     startKoin {
         config?.invoke(this)

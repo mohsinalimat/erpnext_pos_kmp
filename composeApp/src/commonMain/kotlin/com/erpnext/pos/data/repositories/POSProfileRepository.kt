@@ -9,7 +9,11 @@ import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 class POSProfileRepository(
     private val remoteSource: POSProfileRemoteSource
 ) : IPOSRepository {
-    override suspend fun getPOSProfileInfo(): List<POSProfileBO> {
-        return remoteSource.getPOSProfileInfo().toBO()
+    override suspend fun getPOSProfiles(): List<POSProfileBO> {
+        return remoteSource.getPOSProfile().toBO()
+    }
+
+    override suspend fun getPOSProfileDetails(profileId: String): POSProfileBO {
+        return remoteSource.getPOSProfileDetails(profileId).toBO()
     }
 }

@@ -32,11 +32,9 @@ fun AppNavigation() {
             if (shouldShowBottomBar(currentRoute)) {
                 BottomBarNavigation(
                     navController = navController,
-                    currentRoute = currentRoute
                 )
             }
-        }
-    ) { padding ->
+        }) { padding ->
         Box(Modifier.padding(padding)) {
             Setup(navController, false)
 

@@ -7,6 +7,6 @@ class FetchPosProfileUseCase(
     private val repo: IPOSRepository
 ) : UseCase<Unit?, List<POSProfileBO>>() {
     override suspend fun useCaseFunction(input: Unit?): List<POSProfileBO> {
-        return repo.getPOSProfileInfo()
+        return repo.getPOSProfiles()
     }
 }

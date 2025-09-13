@@ -21,11 +21,15 @@ fun HomeRoute(
 fun rememberHomeActions(coordinator: HomeCoordinator) : HomeAction {
     return remember(coordinator) {
         HomeAction(
+            initialState = coordinator::initialState,
             loadUserInfo = coordinator::loadUserInfo,
             loadPOSProfile = coordinator::loadPOSProfile,
             onLogout = coordinator::logout,
             onError = coordinator::onError,
-            openCashbox = coordinator::onPosSelected
+            openCashbox = coordinator::openCashbox,
+            onPosSelected = coordinator::onPosSelected,
+            closeCashbox = coordinator::closeCashbox,
+            isCashboxOpen = coordinator::isCashboxOpen,
         )
     }
 }

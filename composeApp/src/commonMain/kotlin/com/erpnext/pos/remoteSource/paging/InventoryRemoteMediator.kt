@@ -16,6 +16,7 @@ import kotlinx.io.IOException
 @OptIn(ExperimentalPagingApi::class)
 class InventoryRemoteMediator(
     private val apiService: APIService,
+    private val warehouseId: String,
     private val itemDao: ItemDao,
     private val pageSize: Int = 20,
     /**
@@ -35,6 +36,7 @@ class InventoryRemoteMediator(
                 LoadType.PREPEND -> {
                     return@withContext MediatorResult.Success(endOfPaginationReached = true)
                 }
+
                 LoadType.APPEND -> {
                     val countInDb = itemDao.countAll()
                     println("RemoteMediator: APPEND - countInDb=$countInDb (usado como limit_start)")
@@ -43,6 +45,7 @@ class InventoryRemoteMediator(
             }
 
             val itemsDto = apiService.items(
+                warehouseId,
                 offset = offset,
                 limit = pageSize
             )
@@ -59,6 +62,7 @@ class InventoryRemoteMediator(
                         println("RemoteMediator: REFRESH returned empty, preserving local cache")
                     }
                 }
+
                 else -> {
                     if (entities.isNotEmpty()) {
                         itemDao.addItems(entities)
