@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.erpnext.pos.base.BaseViewModel
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
+import com.erpnext.pos.domain.usecases.InventoryInput
 import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.views.CashBoxManager
@@ -29,15 +30,14 @@ class InventoryViewModel(
     private val _stateFlow: MutableStateFlow<InventoryState> =
         MutableStateFlow(InventoryState.Loading)
     val stateFlow = _stateFlow.asStateFlow()
-    private var warehouseId = ""
+    private var warehouseId: String? = ""
+    private var priceList: String? = null
 
     init {
         viewModelScope.launch {
             cashBoxManager.cashboxState.collectLatest { state ->
-                val warehouse = (state as? CashBoxState.Opened)?.warehouse
-                if (warehouse != null) {
-                    warehouseId = warehouse
-                }
+                warehouseId = (state as? CashBoxState.Opened)?.warehouse
+                priceList = (state as? CashBoxState.Opened)?.priceList
             }
         }
     }
@@ -47,7 +47,7 @@ class InventoryViewModel(
         _stateFlow.update { InventoryState.Loading }
         executeUseCase(
             action = {
-                val items = fetchInventoryItemUseCase.invoke(warehouseId)
+                val items = fetchInventoryItemUseCase.invoke(InventoryInput(warehouseId, priceList))
                     .cachedIn(viewModelScope)
                 _stateFlow.update { InventoryState.Success(items) }
             },

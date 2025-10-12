@@ -17,10 +17,13 @@ class InventoryRemoteSource(
     private val apiService: APIService,
     private val itemDao: ItemDao,
 ) {
-    fun getItems(warehouseId: String): Flow<PagingData<ItemEntity>> {
+    fun getItems(
+        warehouseId: String? = null,
+        priceList: String? = null
+    ): Flow<PagingData<ItemEntity>> {
         return Pager(
             config = PagingConfig(pageSize = 20),
-            remoteMediator = InventoryRemoteMediator(apiService, warehouseId, itemDao)
+            remoteMediator = InventoryRemoteMediator(apiService, warehouseId, priceList, itemDao)
         ) {
             itemDao.getAllItems()
         }.flow

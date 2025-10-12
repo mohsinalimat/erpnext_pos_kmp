@@ -19,7 +19,11 @@ import org.koin.core.option.viewModelScopeFactory
 
 sealed interface CashBoxState {
     object Closed : CashBoxState
-    data class Opened(val posProfileName: String, val warehouse: String? = null) : CashBoxState
+    data class Opened(
+        val posProfileName: String,
+        val warehouse: String? = null,
+        val priceList: String? = null
+    ) : CashBoxState
 }
 
 //TODO: Incluir el sharedpref para poder manejar ahi el cashboxId o cargar al iniciar app
@@ -53,7 +57,14 @@ class CashBoxManager(
             }
         cashboxDao.insert(cashbox, details)
         profileDao.updateProfileState(entry.posProfile, true)
-        _cashboxState.update { CashBoxState.Opened(entry.posProfile) }
+        val currentProfile = profileDao.getActiveProfile()
+        _cashboxState.update {
+            CashBoxState.Opened(
+                entry.posProfile,
+                currentProfile?.warehouse,
+                currentProfile?.priceList
+            )
+        }
 
         // Intentar Sync
         /*try {
@@ -74,7 +85,13 @@ class CashBoxManager(
     suspend fun isCashBoxOpen(): Boolean {
         val profile = profileDao.getActiveProfile()
         if (profile != null) {
-            _cashboxState.update { CashBoxState.Opened(profile.profileName, profile.warehouse) }
+            _cashboxState.update {
+                CashBoxState.Opened(
+                    profile.profileName,
+                    profile.warehouse,
+                    profile.priceList
+                )
+            }
         } else {
             _cashboxState.update { CashBoxState.Closed }
         }

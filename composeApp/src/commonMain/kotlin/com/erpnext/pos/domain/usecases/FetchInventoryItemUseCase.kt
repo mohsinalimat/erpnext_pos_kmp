@@ -5,10 +5,11 @@ import com.erpnext.pos.domain.models.ItemBO
 import com.erpnext.pos.domain.repositories.IInventoryRepository
 import kotlinx.coroutines.flow.Flow
 
+data class InventoryInput(val warehouseId: String? = null, val priceList: String? = null)
 class FetchInventoryItemUseCase(
     private val repo: IInventoryRepository
-) : UseCase<String, Flow<PagingData<ItemBO>>>() {
-    override suspend fun useCaseFunction(input: String): Flow<PagingData<ItemBO>> {
-        return repo.getItems(input)
+) : UseCase<InventoryInput, Flow<PagingData<ItemBO>>>() {
+    override suspend fun useCaseFunction(input: InventoryInput): Flow<PagingData<ItemBO>> {
+        return repo.getItems(input.warehouseId, input.priceList)
     }
 }

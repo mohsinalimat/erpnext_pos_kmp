@@ -16,7 +16,8 @@ import kotlinx.io.IOException
 @OptIn(ExperimentalPagingApi::class)
 class InventoryRemoteMediator(
     private val apiService: APIService,
-    private val warehouseId: String,
+    private val warehouseId: String? = null,
+    private val priceList: String? = null,
     private val itemDao: ItemDao,
     private val pageSize: Int = 20,
     /**
@@ -44,10 +45,9 @@ class InventoryRemoteMediator(
                 }
             }
 
-            val itemsDto = apiService.items(
-                warehouseId,
-                offset = offset,
-                limit = pageSize
+            val itemsDto = apiService.getInventoryForWarehouse(
+                warehouse = warehouseId,
+                priceList = priceList,
             )
 
             val entities = itemsDto.toEntity()

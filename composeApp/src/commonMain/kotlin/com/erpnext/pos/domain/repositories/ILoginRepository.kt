@@ -8,7 +8,7 @@ import com.erpnext.pos.remoteSource.dto.CredentialsDto
 import kotlinx.coroutines.flow.Flow
 
 interface IInventoryRepository {
-    suspend fun getItems(warehouseId: String): Flow<PagingData<ItemBO>>
+    suspend fun getItems(warehouseId: String? = null, priceList: String? = null): Flow<PagingData<ItemBO>>
     suspend fun getItemDetails(itemId: String): ItemBO
     suspend fun getCategories(): List<CategoryBO>
 }

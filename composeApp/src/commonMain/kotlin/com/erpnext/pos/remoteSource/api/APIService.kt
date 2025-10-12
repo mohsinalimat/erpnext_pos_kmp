@@ -230,8 +230,8 @@ class APIService(
     }
 
     suspend fun getInventoryForWarehouse(
-        warehouse: String,
-        priceList: String = "Standard Selling",
+        warehouse: String? = null,
+        priceList: String? = "Standard Selling",
     ): List<WarehouseItemDto> {
         val url = authStore.getCurrentSite() ?: throw Exception("URL Invalida")
 
@@ -244,7 +244,8 @@ class APIService(
             offset = 0,
             orderBy = "item_code",
         ) {
-            "warehouse" eq warehouse
+            if (warehouse != null)
+                "warehouse" eq warehouse
             "actual_qty" gt 0.0
         }
 
@@ -259,17 +260,20 @@ class APIService(
             limit = itemCodes.size
         ) {
             "item_code" `in` itemCodes
-            "price_list" eq priceList
+            if (priceList != null)
+                "price_list" eq priceList
         }
 
         val priceMap = prices.associate { it.itemCode!! to it.priceListRate }
 
         //Paso 3: Combinar
-        return bins.map { bin ->
+        val result = bins.map { bin ->
             val price =
                 priceMap[bin.itemCode] ?: getFallbackRate(itemCode = bin.itemCode, url = url)
             WarehouseItemDto(bin.itemCode, bin.actualQty, price)
         }
+
+        return result
     }
 
     private suspend fun getFallbackRate(itemCode: String, url: String?): Double {
@@ -297,15 +301,17 @@ class APIService(
 
         val response = clientOAuth.post(endpoint) {
             contentType(ContentType.Application.Json)
-            setBody(mapOf(
-                "args" to mapOf(
-                    "item_code" to itemCode,
-                    "warehouse" to warehouse,
-                    "price_list" to priceList,
-                    "qty" to 1,  // Para calcular rate unitario
-                    "transaction_type" to "selling"  // Para POS ventas
+            setBody(
+                mapOf(
+                    "args" to mapOf(
+                        "item_code" to itemCode,
+                        "warehouse" to warehouse,
+                        "price_list" to priceList,
+                        "qty" to 1,  // Para calcular rate unitario
+                        "transaction_type" to "selling"  // Para POS ventas
+                    )
                 )
-            ))
+            )
         }
 
         val bodyText = response.bodyAsText()
@@ -320,7 +326,8 @@ class APIService(
 
         // Parsea "message" del method response
         val parsed = json.parseToJsonElement(bodyText).jsonObject
-        val messageElement = parsed["message"] ?: throw FrappeException("No 'message' en respuesta: $bodyText")
+        val messageElement =
+            parsed["message"] ?: throw FrappeException("No 'message' en respuesta: $bodyText")
         return json.decodeFromJsonElement<ItemDetailDto>(messageElement)
     }
 }
