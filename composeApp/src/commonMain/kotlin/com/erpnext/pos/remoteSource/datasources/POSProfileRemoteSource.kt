@@ -27,8 +27,10 @@ class POSProfileRemoteSource(
     }
 
     //TODO: Pausado hasta que tengamos formada toda la info necesaria para abrir caja
+    //TODO: Trabajando de manera local, por el momento
     suspend fun openCashBox(data: POSOpeningEntryDto) {
-        api.openCashbox(data)
+        val response = api.openCashbox(data)
+        response
     }
 
     //TODO: Work in Progress

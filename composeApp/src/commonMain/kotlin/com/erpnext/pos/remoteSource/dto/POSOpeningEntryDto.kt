@@ -18,7 +18,7 @@ data class POSOpeningEntryDto(
     val posProfile: String,
     val company: String,
     @SerialName("period_start_date")
-    val periodStartDate: GMTDate,
+    val periodStartDate: Long,
     val user: String,
     val status: Boolean,
     @SerialName("balance_details")

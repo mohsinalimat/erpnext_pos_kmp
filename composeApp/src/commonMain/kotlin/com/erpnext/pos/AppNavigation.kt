@@ -13,6 +13,7 @@ import com.erpnext.pos.NavGraph.Setup
 import com.erpnext.pos.navigation.BottomBarNavigation
 import com.erpnext.pos.navigation.NavRoute
 import com.erpnext.pos.navigation.NavigationManager
+import com.erpnext.pos.views.CashBoxManager
 import org.koin.compose.koinInject
 
 fun shouldShowBottomBar(currentRoute: String): Boolean {
@@ -23,6 +24,7 @@ fun shouldShowBottomBar(currentRoute: String): Boolean {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val cashBoxManager = koinInject<CashBoxManager>()
 
     val visibleEntries by navController.visibleEntries.collectAsState()
     val currentRoute = visibleEntries.lastOrNull()?.destination?.route ?: ""
@@ -32,6 +34,7 @@ fun AppNavigation() {
             if (shouldShowBottomBar(currentRoute)) {
                 BottomBarNavigation(
                     navController = navController,
+                    cashboxManager = cashBoxManager
                 )
             }
         }) { padding ->

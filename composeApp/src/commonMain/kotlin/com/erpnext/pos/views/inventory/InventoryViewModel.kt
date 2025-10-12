@@ -2,6 +2,7 @@ package com.erpnext.pos.views.inventory
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -22,29 +23,31 @@ class InventoryViewModel(
     private val navManager: NavigationManager,
     private val fetchCategoryUseCase: FetchCategoriesUseCase,
     private val fetchInventoryItemUseCase: FetchInventoryItemUseCase,
+    private val cashBoxManager: CashBoxManager
 ) : BaseViewModel() {
 
     private val _stateFlow: MutableStateFlow<InventoryState> =
         MutableStateFlow(InventoryState.Loading)
     val stateFlow = _stateFlow.asStateFlow()
+    private var warehouseId = ""
 
     init {
         viewModelScope.launch {
-            CashBoxManager.cashboxState.collectLatest { state ->
+            cashBoxManager.cashboxState.collectLatest { state ->
                 val warehouse = (state as? CashBoxState.Opened)?.warehouse
                 if (warehouse != null) {
-
+                    warehouseId = warehouse
                 }
             }
         }
     }
 
 
-    fun fetchAllItems(warehouseId: String? = null) {
+    fun fetchAllItems() {
         _stateFlow.update { InventoryState.Loading }
         executeUseCase(
             action = {
-                val items = fetchInventoryItemUseCase.invoke(warehouseId ?: "")
+                val items = fetchInventoryItemUseCase.invoke(warehouseId)
                     .cachedIn(viewModelScope)
                 _stateFlow.update { InventoryState.Success(items) }
             },

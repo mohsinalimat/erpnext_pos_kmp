@@ -1,5 +1,7 @@
 package com.erpnext.pos.views.home
 
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.erpnext.pos.base.BaseViewModel
 import com.erpnext.pos.domain.models.POSProfileBO
 import com.erpnext.pos.domain.models.UserBO
@@ -11,15 +13,16 @@ import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 import com.erpnext.pos.views.CashBoxManager
 import com.erpnext.pos.views.CashBoxState
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val navManager: NavigationManager,
     private val fetchUserInfoUseCase: FetchUserInfoUseCase,
     private val fetchPosProfileUseCase: FetchPosProfileUseCase,
-    private val fetchPosProfileInfoUseCase: FetchPosProfileInfoUseCase
+    private val fetchPosProfileInfoUseCase: FetchPosProfileInfoUseCase,
+    private val cashboxManager: CashBoxManager
 ) : BaseViewModel() {
     private val _stateFlow: MutableStateFlow<HomeState> = MutableStateFlow(HomeState.Loading)
     val stateFlow = _stateFlow.asStateFlow()
@@ -37,7 +40,7 @@ class HomeViewModel(
         })
     }
 
-    fun isCashboxOpen(): Boolean = CashBoxManager.isCashBoxOpen()
+    suspend fun isCashboxOpen(): Boolean = cashboxManager.isCashBoxOpen()
 
     fun resetToInitialState() {
         _stateFlow.update { HomeState.POSProfiles(posProfiles) }
@@ -69,7 +72,9 @@ class HomeViewModel(
     }
 
     fun openCashbox(entry: POSOpeningEntryDto) {
-        //CashBoxManager.openCashBox(entry.posProfile, null)
+        viewModelScope.launch {
+            cashboxManager.openCashBox(entry)
+        }
     }
 
     fun closeCashbox() {}

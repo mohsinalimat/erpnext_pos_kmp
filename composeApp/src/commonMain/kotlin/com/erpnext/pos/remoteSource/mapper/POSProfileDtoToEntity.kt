@@ -20,7 +20,7 @@ fun POSProfileDto.toEntity(): POSProfileEntity {
         disabled = this.disabled,
         company = this.company,
         currency = this.currency,
-        defaultCurrency = this.currency
+        defaultCurrency = this.currency,
     )
 }
 

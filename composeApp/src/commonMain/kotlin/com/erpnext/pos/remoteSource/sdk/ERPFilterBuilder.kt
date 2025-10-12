@@ -28,6 +28,10 @@ class FiltersBuilder {
         list += Filter(this, Operator.IN, values)
     }
 
+    infix fun String.gt(value: Any) {
+        list += Filter(this, Operator.GT, value)
+    }
+
     infix fun String.like(value: Any) {
         list += Filter(this, Operator.LIKE, value)
     }

@@ -20,6 +20,7 @@ import com.erpnext.pos.remoteSource.api.defaultEngine
 import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
 import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
+import com.erpnext.pos.views.CashBoxManager
 import com.erpnext.pos.views.home.HomeViewModel
 import com.erpnext.pos.views.home.POSProfileViewModel
 import com.erpnext.pos.views.inventory.InventoryViewModel
@@ -80,6 +81,7 @@ val appModule = module {
             "./prefs.preferences_pb".toPath()
         }
     }
+    single<CashBoxManager> { CashBoxManager(get(), get()) }
     //endregion
 
     //region Login DI
@@ -93,7 +95,7 @@ val appModule = module {
     //region Inventory DI
     single { InventoryRemoteSource(get(), get()) }
     single<IInventoryRepository> { InventoryRepository(get()) }
-    single { InventoryViewModel(get(), get(), get()) }
+    single { InventoryViewModel(get(), get(), get(), get()) }
     //endregion
 
     //region POS Profile
@@ -104,7 +106,7 @@ val appModule = module {
 
     //region Home
     single { UserRemoteSource(get(), get()) }
-    single { HomeViewModel(get(), get(), get(), get()) }
+    single { HomeViewModel(get(), get(), get(), get(), get()) }
     single<IUserRepository> { UserRepository(get()) }
     //endregion
 

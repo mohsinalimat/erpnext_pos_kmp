@@ -5,6 +5,7 @@ data class DocTypeFields(val doctype: ERPDocType, val fields: List<String>)
 enum class ERPDocType(val path: String) {
     Item("Item"),
     Category("Item Group"),
+    ItemPrice("Item Price"),
     User("User"),
     Bin("Bin"),
     Customer("Customer"),

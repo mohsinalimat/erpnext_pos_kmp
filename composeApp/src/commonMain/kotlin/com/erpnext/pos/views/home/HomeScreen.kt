@@ -38,10 +38,12 @@ fun HomeScreen(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var currentProfiles by remember { mutableStateOf(emptyList<POSProfileBO>()) }
+    var isOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         actions.loadUserInfo()
         actions.loadPOSProfile()
+        isOpen = actions.isCashboxOpen()
     }
 
     LaunchedEffect(uiState) {
@@ -153,19 +155,21 @@ fun HomeScreen(
 
                     Spacer(Modifier.weight(1f))
 
-                    val isOpen = actions.isCashboxOpen()
                     // Botón abrir caja
                     Button(
                         onClick = {
-                            if (currentProfiles.isNotEmpty()) {
-                                showDialog = true // 🔥 Solo abre el dialog, no recarga
+                            if (isOpen) {
+                                actions.closeCashbox()
+                            } else {
+                                if (currentProfiles.isNotEmpty()) {
+                                    showDialog = true // 🔥 Solo abre el dialog, no recarga
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor =
-                                if (!isOpen) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.error
+                            containerColor = if (!isOpen) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.error
                         )
                     ) {
                         Text(
@@ -182,26 +186,21 @@ fun HomeScreen(
             }
 
             if (showDialog && currentProfiles.isNotEmpty()) {
-                POSProfileDialog(
-                    uiState = uiState,
-                    profiles = currentProfiles,
-                    onSelectProfile = {
-                        actions.onPosSelected(it)
-                    },
-                    onOpenCashbox = { pos, amounts ->
-                        val openEntry = POSOpeningEntryDto(
-                            pos.name,
-                            pos.company,
-                            GMTDate(getTimeMillis()),
-                            pos.name,
-                            true,
-                            amounts.map { BalanceDetailsDto(it.mode.name, it.amount) })
-                        actions.openCashbox(openEntry)
-                    },
-                    onDismiss = {
-                        actions.initialState()
-                        showDialog = false
-                    })
+                POSProfileDialog(uiState = uiState, profiles = currentProfiles, onSelectProfile = {
+                    actions.onPosSelected(it)
+                }, onOpenCashbox = { pos, amounts ->
+                    val openEntry = POSOpeningEntryDto(
+                        pos.name,
+                        pos.company,
+                        getTimeMillis(),
+                        pos.name,
+                        true,
+                        amounts.map { BalanceDetailsDto(it.mode.name, it.amount) })
+                    actions.openCashbox(openEntry)
+                }, onDismiss = {
+                    actions.initialState()
+                    showDialog = false
+                })
             }
         }
     }
@@ -236,7 +235,7 @@ fun POSProfileDialog(
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable {
                             selectedProfile = profile
-                            onSelectProfile(profile) // 🔥 VM cargará info
+                            onSelectProfile(profile) // 🔥 VM carga info
                         },
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(8.dp),

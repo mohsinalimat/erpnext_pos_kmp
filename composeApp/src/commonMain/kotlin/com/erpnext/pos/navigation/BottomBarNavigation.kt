@@ -27,9 +27,10 @@ import com.erpnext.pos.views.CashBoxState
 
 @Composable
 fun BottomBarNavigation(
-    navController: NavController
+    navController: NavController,
+    cashboxManager: CashBoxManager
 ) {
-    val cashBoxState by CashBoxManager.cashboxState.collectAsStateWithLifecycle()
+    val cashBoxState by cashboxManager.cashboxState.collectAsStateWithLifecycle()
     val isCashBoxCurrentlyOpen = cashBoxState is CashBoxState.Opened
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoutePath = navBackStackEntry?.destination?.route

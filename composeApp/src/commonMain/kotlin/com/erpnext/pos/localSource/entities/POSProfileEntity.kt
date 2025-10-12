@@ -37,4 +37,7 @@ data class POSProfileEntity(
 
     @ColumnInfo(name = "default_customer")
     val defaultCustomer: String? = null,
+
+    @ColumnInfo(name = "active")
+    val active: Boolean? = false
 )

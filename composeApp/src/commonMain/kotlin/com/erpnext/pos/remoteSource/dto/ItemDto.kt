@@ -21,10 +21,6 @@ object IntAsBooleanSerializer : KSerializer<Boolean> {
     }
 }
 
-data class ItemDtoResponse(
-    val data: List<ItemDto>
-)
-
 @Serializable
 data class ItemDto(
     @SerialName("item_name")

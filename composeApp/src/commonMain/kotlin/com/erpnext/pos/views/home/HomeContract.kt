@@ -21,7 +21,7 @@ data class HomeAction(
     val openCashbox: (pos: POSOpeningEntryDto) -> Unit = {},
     val onPosSelected: (pos: POSProfileBO) -> Unit = {},
     val closeCashbox: () -> Unit = {},
-    val isCashboxOpen: () -> Boolean = { false },
+    val isCashboxOpen: suspend () -> Boolean = { false },
     val onLogout: () -> Unit = {},
     val onError: (error: String) -> Unit = {},
 )

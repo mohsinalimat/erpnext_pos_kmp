@@ -154,7 +154,7 @@ suspend inline fun <reified T> HttpClient.getERPSingle(
     val parsed = json.parseToJsonElement(bodyText).jsonObject
     val dataElement = parsed["data"]
         ?: throw FrappeException("La respuesta no contiene 'data'. Respuesta: $bodyText")
-    return json.decodeFromJsonElement(dataElement)
+    return json.decodeFromJsonElement<T>(dataElement)
 }
 
 suspend inline fun <reified T, reified R> HttpClient.postERP(

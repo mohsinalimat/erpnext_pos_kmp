@@ -43,7 +43,7 @@ class HomeCoordinator(
         viewModel.closeCashbox()
     }
 
-    fun isCashboxOpen(): Boolean {
+    suspend fun isCashboxOpen(): Boolean {
         return viewModel.isCashboxOpen()
     }
 }

@@ -1,14 +1,18 @@
 package com.erpnext.pos.remoteSource.api
 
 import com.erpnext.pos.BuildKonfig
+import com.erpnext.pos.remoteSource.dto.BinDto
 import com.erpnext.pos.remoteSource.dto.CategoryDto
+import com.erpnext.pos.remoteSource.dto.ItemDetailDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
+import com.erpnext.pos.remoteSource.dto.ItemPriceDto
 import com.erpnext.pos.remoteSource.dto.LoginInfo
 import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
 import com.erpnext.pos.remoteSource.dto.POSProfileSimpleDto
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.dto.UserDto
+import com.erpnext.pos.remoteSource.dto.WarehouseItemDto
 import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
 import com.erpnext.pos.remoteSource.oauth.OAuthConfig
 import com.erpnext.pos.remoteSource.oauth.Pkce
@@ -17,6 +21,8 @@ import com.erpnext.pos.remoteSource.oauth.toBearerToken
 import com.erpnext.pos.remoteSource.oauth.toOAuthConfig
 import com.erpnext.pos.remoteSource.sdk.ERPDocType
 import com.erpnext.pos.remoteSource.sdk.Filter
+import com.erpnext.pos.remoteSource.sdk.FrappeErrorResponse
+import com.erpnext.pos.remoteSource.sdk.FrappeException
 import com.erpnext.pos.remoteSource.sdk.Operator
 import com.erpnext.pos.remoteSource.sdk.filters
 import com.erpnext.pos.remoteSource.sdk.getERPList
@@ -30,7 +36,11 @@ import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.request.*
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 
 class APIService(
     private val client: HttpClient,
@@ -147,11 +157,12 @@ class APIService(
             orderBy = "item_name",
             baseUrl = authStore.getCurrentSite() ?: "",
             offset = offset,
-            limit = limit
-        ) {
-            Filter("warehouse", Operator.EQ, warehouse)
-            Filter("disabled", Operator.EQ, false)
-        }
+            limit = limit,
+            filters = listOf(
+                Filter("warehouse", Operator.EQ, warehouse),
+                Filter("disabled", Operator.EQ, false)
+            )
+        )
     }
 
     suspend fun getCategories(): List<CategoryDto> {
@@ -216,6 +227,101 @@ class APIService(
              contentType(ContentType.Application.Json)
              setBody(site)
          }.body()*/
+    }
+
+    suspend fun getInventoryForWarehouse(
+        warehouse: String,
+        priceList: String = "Standard Selling",
+    ): List<WarehouseItemDto> {
+        val url = authStore.getCurrentSite() ?: throw Exception("URL Invalida")
+
+        //Paso 1: Obtener Bins con Stock > 0
+        val bins = clientOAuth.getERPList<BinDto>(
+            doctype = ERPDocType.Bin.path,
+            fields = listOf("item_code", "actual_qty"),
+            baseUrl = url,
+            limit = 50,
+            offset = 0,
+            orderBy = "item_code",
+        ) {
+            "warehouse" eq warehouse
+            "actual_qty" gt 0.0
+        }
+
+        val itemCodes = bins.map { it.itemCode }.distinct()
+        if (itemCodes.isEmpty()) return emptyList()
+
+        //Paso 2: Obtener los precios de Item Price
+        val prices = clientOAuth.getERPList<ItemPriceDto>(
+            doctype = ERPDocType.ItemPrice.path,
+            fields = listOf("item_code", "price_list_rate"),
+            baseUrl = url,
+            limit = itemCodes.size
+        ) {
+            "item_code" `in` itemCodes
+            "price_list" eq priceList
+        }
+
+        val priceMap = prices.associate { it.itemCode!! to it.priceListRate }
+
+        //Paso 3: Combinar
+        return bins.map { bin ->
+            val price =
+                priceMap[bin.itemCode] ?: getFallbackRate(itemCode = bin.itemCode, url = url)
+            WarehouseItemDto(bin.itemCode, bin.actualQty, price)
+        }
+    }
+
+    private suspend fun getFallbackRate(itemCode: String, url: String?): Double {
+        val item = clientOAuth.getERPSingle<Map<String, Double>>(
+            doctype = ERPDocType.Item.path,
+            name = itemCode,
+            baseUrl = url
+        )
+        return item["standard_rate"] ?: 0.0
+    }
+
+    val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    }
+
+    // Para Facturación: Fetch optimizado stock + precio por item (usa Frappe method)
+    suspend fun getItemStockAndPrice(
+        itemCode: String,
+        warehouse: String,
+        priceList: String = "Standard Selling"
+    ): ItemDetailDto {
+        val url = authStore.getCurrentSite() ?: throw Exception("URL Invalida")
+        val endpoint = "$url/api/method/erpnext.stock.get_item_details"
+
+        val response = clientOAuth.post(endpoint) {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf(
+                "args" to mapOf(
+                    "item_code" to itemCode,
+                    "warehouse" to warehouse,
+                    "price_list" to priceList,
+                    "qty" to 1,  // Para calcular rate unitario
+                    "transaction_type" to "selling"  // Para POS ventas
+                )
+            ))
+        }
+
+        val bodyText = response.bodyAsText()
+        if (!response.status.isSuccess()) {
+            try {
+                val err = json.decodeFromString<FrappeErrorResponse>(bodyText)
+                throw FrappeException(err.exception ?: "Error: ${response.status}", err)
+            } catch (e: Exception) {
+                throw Exception("Error en get_item_details: ${response.status} - $bodyText", e)
+            }
+        }
+
+        // Parsea "message" del method response
+        val parsed = json.parseToJsonElement(bodyText).jsonObject
+        val messageElement = parsed["message"] ?: throw FrappeException("No 'message' en respuesta: $bodyText")
+        return json.decodeFromJsonElement<ItemDetailDto>(messageElement)
     }
 }
 
