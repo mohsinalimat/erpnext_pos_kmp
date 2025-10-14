@@ -36,5 +36,4 @@ class InventoryRemoteSource(
     suspend fun getCategories(): List<CategoryDto> {
         return apiService.getCategories()
     }
-
 }

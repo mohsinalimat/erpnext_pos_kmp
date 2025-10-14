@@ -6,7 +6,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ItemPriceDto(
     @SerialName("item_code")
-    val itemCode: String? = null,
+    val itemCode: String,
+    @SerialName("uom")
+    val uom: String,
+    @SerialName("price_list")
+    val priceList: String,
     @SerialName("price_list_rate")
-    val priceListRate: Double
+    val priceListRate: Double,
+    @SerialName("selling")
+    @Serializable(with = IntAsBooleanSerializer::class)
+    val selling: Boolean = true
 )

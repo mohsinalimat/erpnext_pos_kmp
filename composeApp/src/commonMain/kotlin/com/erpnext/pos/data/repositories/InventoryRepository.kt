@@ -13,7 +13,7 @@ class InventoryRepository(
     private val remoteSource: InventoryRemoteSource
 ) : IInventoryRepository {
 
-    override suspend fun getItems(warehouseId: String? = null, priceList: String? = null): Flow<PagingData<ItemBO>> {
+    override suspend fun getItems(warehouseId: String?, priceList: String?): Flow<PagingData<ItemBO>> {
         return remoteSource.getItems(warehouseId, priceList).toPagingBO()
     }
 

@@ -13,7 +13,7 @@ enum class ERPDocType(val path: String) {
     PurchaseInvoice("Purchase Invoice"),
     StockEntry("Stock Entry"),
     POSProfile("POS Profile"),
-    POSProfileEntry("POS Profile Entry")
+    POSOpeningEntry("POS Profile Entry")
 }
 
 val fields: List<DocTypeFields> = listOf(
@@ -21,16 +21,18 @@ val fields: List<DocTypeFields> = listOf(
         ERPDocType.Item,
         listOf(
             "item_code",
-            "description",
             "item_name",
+            "item_group",
+            "description",
             "brand",
             "image",
-            "item_code",
             "disabled",
             "barcodes",
             "stock_uom",
-            "item_group"
-        ),
+            "standard_rate",
+            "is_stock_item",
+            "is_sales_item"  // Correcciones
+        )
     ),
     DocTypeFields(
         ERPDocType.Category, listOf("name")
@@ -51,6 +53,21 @@ val fields: List<DocTypeFields> = listOf(
             "language",
             "full_name"
         )
+    ),
+    DocTypeFields(
+        ERPDocType.Bin,
+        listOf(
+            "item_code",
+            "warehouse",
+            "actual_qty",
+            "projected_qty",
+            "stock_uom",
+            "valuation_rate"
+        )
+    ),
+    DocTypeFields(
+        ERPDocType.ItemPrice,
+        listOf("item_code", "uom", "price_list", "price_list_rate", "selling")
     )
 )
 

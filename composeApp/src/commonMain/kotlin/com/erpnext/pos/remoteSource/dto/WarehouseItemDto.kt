@@ -14,4 +14,20 @@ data class WarehouseItemDto(
     val actualQty: Double,
     @SerialName("price")
     val price: Double,
+    val name: String,  // De item_name
+    @SerialName("item_group")
+    val itemGroup: String,
+    val description: String,
+    val barcode: String = "",  // Default; no en JSON
+    val image: String = "",
+    val discount: Double = 0.0,  // Default; no field
+    @SerialName("is_service")
+    @Serializable(with = IntAsBooleanSerializer::class)
+    val isService: Boolean = false,  // Inferido
+    @SerialName("is_stocked")
+    @Serializable(with = IntAsBooleanSerializer::class)
+    val isStocked: Boolean = false,  // De is_stock_item
+    @SerialName("stock_uom")
+    val stockUom: String,
+    val brand: String = ""
 )

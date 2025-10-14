@@ -7,6 +7,12 @@ import kotlinx.serialization.Serializable
 data class BinDto(
     @SerialName("item_code")
     val itemCode: String,
+    @SerialName("warehouse")
+    val warehouse: String,
     @SerialName("actual_qty")
     val actualQty: Double,
+    @SerialName("stock_uom")
+    val stockUom: String,
+    @SerialName("valuation_rate")
+    val valuationRate: Double = 0.0  // Costo, útil para margen en POS
 )

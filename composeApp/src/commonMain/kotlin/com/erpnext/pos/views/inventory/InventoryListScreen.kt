@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -26,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.OnlinePrediction
@@ -49,6 +51,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -60,6 +63,11 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.erpnext.pos.domain.models.CategoryBO
 import com.erpnext.pos.domain.models.ItemBO
 import com.erpnext.pos.utils.formatDoubleToString
 import kotlinx.coroutines.flow.Flow
@@ -112,7 +120,6 @@ fun InventoryScreen(
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
-    val categories = remember { listOf("Todos", "Pollo", "Papas", "Bebidas", "Postres") }
 
     LaunchedEffect(Unit) {
         actions.fetchAll()
@@ -171,20 +178,7 @@ fun InventoryScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                tonalElevation = filterElevation,
-                shadowElevation = filterElevation,
-            ) {
-                InventoryFilters(
-                    searchQuery = searchQuery,
-                    selectedCategory = selectedCategory,
-                    categories = categories,
-                    onQueryChange = actions.onSearchQueryChanged,
-                    onCategoryChange = actions.onCategorySelected,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
-                )
-            }
+
 
             when (val currentState = state) {
                 InventoryState.Loading -> {
@@ -206,6 +200,27 @@ fun InventoryScreen(
                 }
 
                 is InventoryState.Success -> {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        tonalElevation = filterElevation,
+                        shadowElevation = filterElevation,
+                    ) {
+                        InventoryFilters(
+                            searchQuery = searchQuery,
+                            selectedCategory = selectedCategory,
+                            categories = currentState.categories.map { it.name },
+                            onQueryChange = { query ->
+                                searchQuery = query
+                                actions.onSearchQueryChanged(query)
+                            },
+                            onCategoryChange = { category ->
+                                actions.onCategorySelected(category)
+                                selectedCategory = category
+                            },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
+                        )
+                    }
+
                     val items = currentState.items.collectAsLazyPagingItems()
                     if (items.itemCount == 0 && items.loadState.refresh !is LoadState.Loading) {
                         EmptyStateMessage(
@@ -218,7 +233,8 @@ fun InventoryScreen(
                         InventoryListContent(
                             paddingValue = paddingValues,
                             items = items,
-                            listState = gridState
+                            listState = gridState,
+                            actions = actions
                         )
                     }
                 }
@@ -242,12 +258,29 @@ private fun InventoryFilters(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(categories) { category ->
+                items(categories.reversed()) { category ->
+                    val isSelected = category == selectedCategory
+
                     FilterChip(
-                        selected = selectedCategory == category,
+                        selected = isSelected,
                         onClick = { onCategoryChange(category) },
-                        label = { Text(category) },
-                        shape = MaterialTheme.shapes.small
+                        label = { Text(category.lowercase().replaceFirstChar { it.titlecase() }) },
+                        leadingIcon = {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        },
+                        shape = MaterialTheme.shapes.small,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                 }
             }
@@ -274,7 +307,7 @@ fun SearchTextField(
 
     OutlinedTextField(
         value = searchQuery,
-        onValueChange = onSearchQueryChange,
+        onValueChange = { query -> onSearchQueryChange(query) },
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp), // Un poco de padding vertical para que respire
@@ -331,7 +364,8 @@ fun SearchTextField(
 private fun InventoryListContent(
     paddingValue: PaddingValues,
     items: LazyPagingItems<ItemBO>,
-    listState: LazyGridState
+    listState: LazyGridState,
+    actions: InventoryAction
 ) {
     Box(
         modifier = Modifier//.padding(paddingValue)
@@ -385,11 +419,11 @@ private fun InventoryListContent(
                         items(
                             count = items.itemCount,
                             key = items.itemKey { it.itemCode },
-                            contentType = items.itemContentType { "ItemBO" }
+                            contentType = items.itemContentType { it.itemCode }
                         ) { index ->
                             val product = items[index]
                             if (product != null) {
-                                ProductRowItem(product)
+                                ProductRowItem(actions, product)
                             } else {
                                 PlaceholderProductRowItem()
                             }
@@ -433,12 +467,17 @@ private fun InventoryListContent(
 }
 
 @Composable
-fun ProductRowItem(product: ItemBO) {
+fun ProductRowItem(actions: InventoryAction, product: ItemBO) {
     val formattedPrice = remember(product.price) {
         formatDoubleToString(product.price, 2)
     }
     val availableQty = remember(product.actualQty) {
         formatDoubleToString(product.actualQty, 0)
+    }
+    var baseUrl by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        baseUrl = "https://erp-ni.distribuidorareyes.com" // actions.fetchBaseUrl()
     }
 
     Card(
@@ -453,6 +492,19 @@ fun ProductRowItem(product: ItemBO) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            val imageUrl = baseUrl + product.image
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalPlatformContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(80.dp),
+                contentDescription = "Imagen de ${product.name}"
+            )
+
             Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                 Text(
                     product.name, // Manejar nulos
@@ -464,7 +516,7 @@ fun ProductRowItem(product: ItemBO) {
                 Text(
                     "Disp: $availableQty",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (product.actualQty > 0) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error
                 )
                 Text(
                     "Cód: ${product.itemCode}", // Manejar nulos
@@ -649,6 +701,29 @@ fun PlaceholderProductRowItem(modifier: Modifier = Modifier) {
 
 @Preview
 @Composable
+fun ProductRowItemPreview() {
+    ProductRowItem(
+        actions = InventoryAction(),
+        product = ItemBO(
+            "Salchichon c/chile 200g",
+            "Salchichon c/chile 200g",
+            "SCC200",
+            "",
+            "https://erp-ni.distribuidorareyes.com/files/355047-1200-900.jpg",
+            "EMBUTIDOS",
+            "Zurqui",
+            15.0,
+            200.0,
+            0.0,
+            false,
+            true,
+            "Libra"
+        )
+    )
+}
+
+@Preview
+@Composable
 fun PlaceholderProductRowItemPreview() {
     MaterialTheme { // Asegúrate de envolverlo en tu tema para que los colores funcionen
         PlaceholderProductRowItem()
@@ -700,7 +775,7 @@ fun InventoryScreenSuccessPreview() {
     val flow: Flow<PagingData<ItemBO>> = flowOf(PagingData.from(items))
     MaterialTheme {
         InventoryScreen(
-            state = InventoryState.Success(flow),
+            state = InventoryState.Success(flow, listOf(CategoryBO("CARNES"))),
             actions = InventoryAction()
         )
     }
@@ -711,12 +786,11 @@ fun InventoryScreenSuccessPreview() {
 fun InventoryScreenSuccessNoResultsPreview() {
     MaterialTheme {
         InventoryScreen(
-            state = InventoryState.Success(flowOf(PagingData.from(listOf()))),
+            state = InventoryState.Success(flowOf(PagingData.from(listOf())), listOf()),
             actions = InventoryAction()
         )
     }
 }
-
 
 @Preview()
 @Composable

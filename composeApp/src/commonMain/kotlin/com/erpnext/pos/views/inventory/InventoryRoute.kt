@@ -26,8 +26,8 @@ fun rememberInventoryActions(coordinator: InventoryCoordinator): InventoryAction
             onClearSearch = coordinator::onClearSearch,
             onPrint = coordinator::onPrint,
             getDetails = coordinator::getItemDetails,
-            filter = coordinator::filter,
             onRefresh = coordinator::onRefresh,
+            fetchBaseUrl = coordinator::fetchBaseUrl,
             onSearchQueryChanged = coordinator::onSearchQueryChanged,
             onCategorySelected = coordinator::onCategorySelected
         )

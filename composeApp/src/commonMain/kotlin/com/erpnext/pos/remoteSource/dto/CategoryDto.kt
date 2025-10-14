@@ -1,4 +1,6 @@
 package com.erpnext.pos.remoteSource.dto
 
-data class CategoryList(val categories: List<CategoryDto>)
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CategoryDto(val name: String)

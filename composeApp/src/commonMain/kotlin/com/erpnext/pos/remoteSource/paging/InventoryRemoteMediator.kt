@@ -48,6 +48,8 @@ class InventoryRemoteMediator(
             val itemsDto = apiService.getInventoryForWarehouse(
                 warehouse = warehouseId,
                 priceList = priceList,
+                offset = offset,
+                limit = pageSize
             )
 
             val entities = itemsDto.toEntity()

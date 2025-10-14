@@ -23,26 +23,35 @@ object IntAsBooleanSerializer : KSerializer<Boolean> {
 
 @Serializable
 data class ItemDto(
-    @SerialName("item_name")
-    var name: String = "",
     @SerialName("item_code")
-    var itemCode: String = "",
-    @SerialName("description")
-    var description: String,
-    var barcode: String = "",
+    val itemCode: String,
+    @SerialName("item_name")
+    val itemName: String,
     @SerialName("item_group")
-    var itemGroup: String = "",
-    var brand: String? = null,
-    var image: String? = null,
-    var price: Double = 0.0,
-    @SerialName("cost_price")
-    var actualQty: Double = 0.0,
-    var discount: Double = 0.0,
-    var isService: Boolean = false,
-    var isStocked: Boolean = false,
-    @SerialName("stock_uom")
-    var stockUom: String,
-    @Serializable(with = IntAsBooleanSerializer::class)
+    val itemGroup: String,
+    @SerialName("description")
+    val description: String,
+    @SerialName("brand")
+    val brand: String? = null,
+    @SerialName("image")
+    val image: String? = null,
     @SerialName("disabled")
-    var isDisabled: Boolean = false,
+    @Serializable(with = IntAsBooleanSerializer::class)
+    val disabled: Boolean = false,
+    @SerialName("stock_uom")
+    val stockUom: String,
+    @SerialName("standard_rate")
+    val standardRate: Double = 0.0,
+    @SerialName("is_stock_item")
+    @Serializable(with = IntAsBooleanSerializer::class)
+    val isStockItem: Boolean = false,
+    @SerialName("is_sales_item")
+    @Serializable(with = IntAsBooleanSerializer::class)
+    val isSalesItem: Boolean = true
+)
+
+@Serializable
+data class BarcodeChild(
+    @SerialName("barcode")
+    val barcode: String
 )

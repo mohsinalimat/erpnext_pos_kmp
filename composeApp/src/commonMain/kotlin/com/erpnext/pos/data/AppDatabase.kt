@@ -32,7 +32,7 @@ import com.erpnext.pos.localSource.entities.UserEntity
         SalesInvoiceEntity::class,
         CashboxEntity::class,
         BalanceDetailsEntity::class
-    ], version = 13,
+    ], version = 15,
     exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)

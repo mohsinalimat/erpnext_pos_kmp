@@ -2,15 +2,24 @@ package com.erpnext.pos.remoteSource.mapper
 
 import com.erpnext.pos.localSource.entities.ItemEntity
 import com.erpnext.pos.remoteSource.dto.ItemDto
+import com.erpnext.pos.remoteSource.dto.WarehouseItemDto
+import kotlin.jvm.JvmName
 
+@JvmName("toEntityItemDto")
 fun List<ItemDto>.toEntity(): List<ItemEntity> {
     return this.map { it.toEntity() }
 }
 
-fun ItemDto.toEntity(): ItemEntity {
+@JvmName("toEntityWarehouseItemDto")
+fun List<WarehouseItemDto>.toEntity(): List<ItemEntity> {
+    return this.map { it.toEntity() }
+}
+
+fun WarehouseItemDto.toEntity(): ItemEntity {
     return ItemEntity(
         name = this.name,
         itemCode = this.itemCode,
+        actualQty = this.actualQty,
         itemGroup = this.itemGroup,
         description = this.description,
         barcode = this.barcode,
@@ -19,6 +28,18 @@ fun ItemDto.toEntity(): ItemEntity {
         discount = this.discount,
         isService = this.isService,
         isStocked = this.isStocked,
+        stockUom = this.stockUom,
+        brand = this.brand,
+    )
+}
+
+fun ItemDto.toEntity(): ItemEntity {
+    return ItemEntity(
+        name = this.itemName,
+        itemCode = this.itemCode,
+        itemGroup = this.itemGroup,
+        description = this.description,
+        image = this.image,
         stockUom = this.stockUom,
         brand = this.brand,
     )

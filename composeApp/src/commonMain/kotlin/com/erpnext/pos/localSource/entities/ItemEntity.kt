@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 data class ItemEntity(
     @PrimaryKey(autoGenerate = false)
     var itemCode: String = "",
+    var actualQty: Double = 0.0,
     var name: String = "",
     var description: String,
     var barcode: String = "",

@@ -54,7 +54,7 @@ class LoginViewModel(
                     LoginState.Error(
                         e.message ?: "Error durante la autenticación"
                     )
-                }
+            }
             }
         }
     }

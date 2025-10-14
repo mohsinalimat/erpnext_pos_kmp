@@ -2,7 +2,6 @@ package com.erpnext.pos.views.inventory
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.erpnext.pos.remoteSource.dto.ItemDto
 import org.koin.compose.viewmodel.koinViewModel
 
 class InventoryCoordinator(
@@ -16,22 +15,26 @@ class InventoryCoordinator(
 
     fun onPrint() {}
 
-    fun onSearchQueryChanged(input: String) {}
+    fun onSearchQueryChanged(input: String) {
+        viewModel.onSearchQueryChanged(input)
+    }
 
     fun onClearSearch() {}
 
-    fun onCategorySelected(category: String) {}
+    fun onCategorySelected(category: String) {
+        viewModel.onCategorySelected(category)
+    }
 
     fun getItemDetails(itemId: String) {
         viewModel.getItemDetail(itemId)
     }
 
-    fun filter(category: String, query: String) {
-        viewModel.filter(category, query)
-    }
-
     fun onRefresh() {
         viewModel.refresh()
+    }
+
+    suspend fun fetchBaseUrl(): String {
+        return viewModel.fetchBaseUrl()
     }
 
     fun onError(message: String) {

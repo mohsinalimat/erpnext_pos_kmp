@@ -167,10 +167,10 @@ class APIService(
 
     suspend fun getCategories(): List<CategoryDto> {
         val url = authStore.getCurrentSite() ?: ""
-        return clientOAuth.getERPList(
+        return clientOAuth.getERPList<CategoryDto>(
             ERPDocType.Category.path,
             ERPDocType.Category.getFields(),
-            orderBy = "name", baseUrl = url
+            orderBy = "name asc", baseUrl = url
         )
     }
 
@@ -189,7 +189,7 @@ class APIService(
     suspend fun openCashbox(pos: POSOpeningEntryDto) {
         val url = authStore.getCurrentSite()
         return clientOAuth.postERP(
-            ERPDocType.POSProfileEntry.path,
+            ERPDocType.POSOpeningEntry.path,  // Corrección: Usa POS Opening Entry doctype
             pos,
             url
         )
@@ -229,20 +229,23 @@ class APIService(
          }.body()*/
     }
 
+    // Para Inventario Total: Fetch batch con extras
     suspend fun getInventoryForWarehouse(
-        warehouse: String? = null,
+        warehouse: String?,
         priceList: String? = "Standard Selling",
+        offset: Int = 0,
+        limit: Int = 20
     ): List<WarehouseItemDto> {
         val url = authStore.getCurrentSite() ?: throw Exception("URL Invalida")
 
-        //Paso 1: Obtener Bins con Stock > 0
+        // Fetch Bins
         val bins = clientOAuth.getERPList<BinDto>(
             doctype = ERPDocType.Bin.path,
-            fields = listOf("item_code", "actual_qty"),
-            baseUrl = url,
-            limit = 50,
-            offset = 0,
+            fields = ERPDocType.Bin.getFields(),
+            limit = limit,
+            offset = offset,
             orderBy = "item_code",
+            baseUrl = url
         ) {
             if (warehouse != null)
                 "warehouse" eq warehouse
@@ -252,37 +255,58 @@ class APIService(
         val itemCodes = bins.map { it.itemCode }.distinct()
         if (itemCodes.isEmpty()) return emptyList()
 
-        //Paso 2: Obtener los precios de Item Price
+        // Fetch Items batch con fields extras
+        val items = clientOAuth.getERPList<ItemDto>(
+            doctype = ERPDocType.Item.path,
+            fields = ERPDocType.Item.getFields(),
+            limit = itemCodes.size,
+            baseUrl = url
+        ) {
+            "name" `in` itemCodes
+        }
+
+        val itemMap = items.associateBy { it.itemCode }
+
+        // Fetch precios batch
         val prices = clientOAuth.getERPList<ItemPriceDto>(
             doctype = ERPDocType.ItemPrice.path,
-            fields = listOf("item_code", "price_list_rate"),
-            baseUrl = url,
-            limit = itemCodes.size
+            fields = ERPDocType.ItemPrice.getFields(),
+            limit = itemCodes.size,
+            baseUrl = url
         ) {
             "item_code" `in` itemCodes
             if (priceList != null)
                 "price_list" eq priceList
         }
 
-        val priceMap = prices.associate { it.itemCode!! to it.priceListRate }
+        val priceMap = prices.associate { it.itemCode to it.priceListRate }
 
-        //Paso 3: Combinar
-        val result = bins.map { bin ->
-            val price =
-                priceMap[bin.itemCode] ?: getFallbackRate(itemCode = bin.itemCode, url = url)
-            WarehouseItemDto(bin.itemCode, bin.actualQty, price)
+        // Combina todo en WarehouseItemDto
+        return bins.map { bin ->
+            val item = itemMap[bin.itemCode]
+                ?: throw FrappeException("Item no encontrado: ${bin.itemCode}")
+            val price = priceMap[bin.itemCode] ?: item.standardRate
+            val barcode = ""  // No en JSON; "" default
+            val isStocked = item.isStockItem
+            val isService =
+                !isStocked || (item.itemGroup == "COMPLEMENTARIOS")  // Infer de group en JSON
+
+            WarehouseItemDto(
+                itemCode = bin.itemCode,
+                actualQty = bin.actualQty,
+                price = price,
+                name = item.itemName,
+                itemGroup = item.itemGroup,
+                description = item.description,
+                barcode = barcode,
+                image = item.image ?: "",
+                discount = 0.0,  // No field; default 0
+                isService = isService,
+                isStocked = isStocked,
+                stockUom = item.stockUom,
+                brand = item.brand ?: ""
+            )
         }
-
-        return result
-    }
-
-    private suspend fun getFallbackRate(itemCode: String, url: String?): Double {
-        val item = clientOAuth.getERPSingle<Map<String, Double>>(
-            doctype = ERPDocType.Item.path,
-            name = itemCode,
-            baseUrl = url
-        )
-        return item["standard_rate"] ?: 0.0
     }
 
     val json = Json {
@@ -290,7 +314,6 @@ class APIService(
         encodeDefaults = true
     }
 
-    // Para Facturación: Fetch optimizado stock + precio por item (usa Frappe method)
     suspend fun getItemStockAndPrice(
         itemCode: String,
         warehouse: String,
@@ -307,8 +330,11 @@ class APIService(
                         "item_code" to itemCode,
                         "warehouse" to warehouse,
                         "price_list" to priceList,
-                        "qty" to 1,  // Para calcular rate unitario
-                        "transaction_type" to "selling"  // Para POS ventas
+                        "qty" to 1,
+                        "transaction_type" to "selling",
+                        "doctype" to "POS Invoice",
+                        "set_basic_rate" to 1,
+                        "ignore_pricing_rule" to 0
                     )
                 )
             )
@@ -324,11 +350,26 @@ class APIService(
             }
         }
 
-        // Parsea "message" del method response
         val parsed = json.parseToJsonElement(bodyText).jsonObject
         val messageElement =
             parsed["message"] ?: throw FrappeException("No 'message' en respuesta: $bodyText")
-        return json.decodeFromJsonElement<ItemDetailDto>(messageElement)
+
+        val details = json.decodeFromJsonElement<ItemDetailDto>(messageElement)
+
+        // Procesamiento post-fetch: Ajusta fields según reglas de negocios
+        val processedBarcode = ""  // No en response; default ""
+        val processedIsStocked = details.isStocked  // De is_stock_item si en response
+        val processedIsService = !processedIsStocked || (details.itemGroup == "COMPLEMENTARIOS")
+
+        return details.copy(
+            itemCode = details.itemCode ?: itemCode,
+            price = details.price,
+            name = details.name ?: "",
+            barcode = processedBarcode,
+            discount = 0.0,
+            isStocked = processedIsStocked,
+            isService = processedIsService
+        )
     }
 }
 

@@ -95,7 +95,7 @@ val appModule = module {
     //region Inventory DI
     single { InventoryRemoteSource(get(), get()) }
     single<IInventoryRepository> { InventoryRepository(get()) }
-    single { InventoryViewModel(get(), get(), get(), get()) }
+    single { InventoryViewModel(get(), get(), get(),  get(),get()) }
     //endregion
 
     //region POS Profile
