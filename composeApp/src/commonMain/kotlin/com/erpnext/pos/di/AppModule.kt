@@ -11,6 +11,8 @@ import com.erpnext.pos.domain.repositories.ICustomerRepository
 import com.erpnext.pos.domain.repositories.IInventoryRepository
 import com.erpnext.pos.domain.repositories.IPOSRepository
 import com.erpnext.pos.domain.repositories.IUserRepository
+import com.erpnext.pos.domain.usecases.CheckCustomerCreditUseCase
+import com.erpnext.pos.domain.usecases.CustomerSearchUseCase
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomerDetailUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomersUseCase
@@ -27,6 +29,7 @@ import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
 import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
 import com.erpnext.pos.views.CashBoxManager
+import com.erpnext.pos.views.customer.CustomerViewModel
 import com.erpnext.pos.views.home.HomeViewModel
 import com.erpnext.pos.views.home.POSProfileViewModel
 import com.erpnext.pos.views.inventory.InventoryViewModel
@@ -114,6 +117,7 @@ val appModule = module {
     single { CustomerRemoteSource(get(), get()) }
     single { CustomerLocalSource(get()) }
     single<ICustomerRepository> { CustomerRepository(get(), get()) }
+    single { CustomerViewModel(get(), get(), get(), get(), get()) }
     //endregion
 
     //region Home
@@ -123,6 +127,8 @@ val appModule = module {
     //endregion
 
     //region UseCases DI
+    single { CheckCustomerCreditUseCase(get()) }
+    single { CustomerSearchUseCase(get()) }
     single { FetchCustomersUseCase(get()) }
     single { FetchCustomerDetailUseCase(get()) }
     single { FetchInventoryItemUseCase(get()) }

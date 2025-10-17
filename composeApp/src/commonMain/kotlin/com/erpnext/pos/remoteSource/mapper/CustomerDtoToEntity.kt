@@ -17,7 +17,6 @@ fun CustomerDto.toEntity(
     customerName = customerName,
     territory = territory,
     mobileNo = mobileNo,
-    phone = phone,
     customerType = customerType,
     creditLimit = creditLimit,
     currentBalance = totalPendingAmount,  // Map totalPendingAmount a currentBalance
@@ -32,11 +31,11 @@ fun CustomerEntity.toBO(): CustomerBO = CustomerBO(
     customerName = customerName,
     territory = territory,
     mobileNo = mobileNo,
-    phone = phone,
     customerType = customerType,
     creditLimit = listOf(CreditLimit(creditLimit = creditLimit)),
     address = address,
     currentBalance = currentBalance,
-    pendingInvoices = totalPendingAmount,  // Total monto pendiente
+    pendingInvoices = pendingInvoicesCount,  // Total monto pendiente
+    totalPendingAmount = totalPendingAmount,
     availableCredit = availableCredit
 )

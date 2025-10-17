@@ -10,11 +10,9 @@ data class CustomerDto(
     @SerialName("customer_name")
     val customerName: String,
     @SerialName("territory")
-    val territory: String,
+    val territory: String? = null,
     @SerialName("mobile_no")
     val mobileNo: String? = null,
-    @SerialName("phone")
-    val phone: String? = null,
     @SerialName("customer_type")
     val customerType: String,
     @SerialName("disabled")

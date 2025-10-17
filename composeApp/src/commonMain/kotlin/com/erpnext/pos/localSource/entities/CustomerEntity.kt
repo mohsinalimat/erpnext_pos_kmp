@@ -7,14 +7,13 @@ import androidx.room.PrimaryKey
 data class CustomerEntity(
     @PrimaryKey val name: String,
     val customerName: String,
-    val territory: String,
+    val territory: String?,
     val mobileNo: String?,
-    val phone: String?,
     val customerType: String,
     val creditLimit: Double,
     val currentBalance: Double,
     val totalPendingAmount: Double,  // Sum outstanding_amount
     val pendingInvoicesCount: Int,
     val availableCredit: Double,
-    val address: String  // Formatted
+    val address: String? = null  // Formatted
 )

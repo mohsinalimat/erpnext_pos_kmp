@@ -7,7 +7,7 @@ sealed class CustomerState {
     object Empty : CustomerState()
     data class Success(
         val customers: List<CustomerBO>,
-        val territories: List<String> = emptyList()
+        val territories: List<String?> = emptyList()
     ) : CustomerState()
 
     data class Error(val message: String) : CustomerState()

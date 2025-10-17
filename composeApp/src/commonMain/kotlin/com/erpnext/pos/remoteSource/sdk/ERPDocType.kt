@@ -76,7 +76,6 @@ val fields: List<DocTypeFields> = listOf(
             "customer_name",
             "territory",
             "mobile_no",
-            "phone",
             "customer_type",
             "disabled",
             "credit_limits.credit_limit",
