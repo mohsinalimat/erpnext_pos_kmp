@@ -5,12 +5,14 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import com.erpnext.pos.localSource.dao.CashboxDao
+import com.erpnext.pos.localSource.dao.CustomerDao
 import com.erpnext.pos.localSource.dao.ItemDao
 import com.erpnext.pos.localSource.dao.POSProfileDao
 import com.erpnext.pos.localSource.dao.PaymentModesDao
 import com.erpnext.pos.localSource.dao.UserDao
 import com.erpnext.pos.localSource.entities.BalanceDetailsEntity
 import com.erpnext.pos.localSource.entities.CashboxEntity
+import com.erpnext.pos.localSource.entities.CustomerEntity
 import com.erpnext.pos.localSource.entities.ItemEntity
 import com.erpnext.pos.localSource.entities.POSInvoiceEntity
 import com.erpnext.pos.localSource.entities.POSInvoiceItemEntity
@@ -31,8 +33,9 @@ import com.erpnext.pos.localSource.entities.UserEntity
         POSInvoicePaymentEntity::class,
         SalesInvoiceEntity::class,
         CashboxEntity::class,
-        BalanceDetailsEntity::class
-    ], version = 15,
+        BalanceDetailsEntity::class,
+        CustomerEntity::class
+    ], version = 16,
     exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -42,6 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun posProfileDao(): POSProfileDao
     abstract fun paymentModesDao(): PaymentModesDao
     abstract fun cashboxDao(): CashboxDao
+    abstract fun customerDao(): CustomerDao
 }
 
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {

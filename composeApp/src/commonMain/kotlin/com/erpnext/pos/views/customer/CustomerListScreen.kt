@@ -25,8 +25,8 @@ data class Customer(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerListScreen(
-    onNavigate: () -> Unit,
-    onCustomerClick: (Customer) -> Unit
+    ostate: CustomerState,
+    actions: CustomerAction
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -54,7 +54,10 @@ fun CustomerListScreen(
                         Icon(Icons.Filled.Refresh, contentDescription = "Update")
                     }
                     IconButton(onClick = {}) {
-                        Icon(Icons.Filled.OnlinePrediction, contentDescription = "Online Prediction")
+                        Icon(
+                            Icons.Filled.OnlinePrediction,
+                            contentDescription = "Online Prediction"
+                        )
                     }
                 }
             )
@@ -84,7 +87,7 @@ fun CustomerListScreen(
             ) {
                 items(filteredCustomers) { customer ->
                     CustomerItem(customer = customer) {
-                        onCustomerClick(customer)
+                        actions.toDetails(customer.id)
                     }
                 }
             }

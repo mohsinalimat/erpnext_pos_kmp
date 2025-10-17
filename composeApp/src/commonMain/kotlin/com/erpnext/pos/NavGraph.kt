@@ -11,6 +11,7 @@ import com.erpnext.pos.views.home.HomeScreen
 import com.erpnext.pos.views.InvoiceListScreen
 import com.erpnext.pos.views.customer.CustomerDetailScreen
 import com.erpnext.pos.views.customer.CustomerListScreen
+import com.erpnext.pos.views.customer.CustomerRoute
 import com.erpnext.pos.views.home.HomeRoute
 import com.erpnext.pos.views.inventory.InventoryRoute
 import com.erpnext.pos.views.login.LoginRoute
@@ -41,12 +42,7 @@ object NavGraph {
                 CheckoutScreen(onNavigate = { navController.navigate(NavRoute.Customer.path) })
             }
             composable(NavRoute.Customer.path) {
-                CustomerListScreen(
-                    onNavigate = { navController.navigate(NavRoute.Customer.path) },
-                    onCustomerClick = { customer ->
-                        //navController.navigate("${NavRoute.CustomerDetail.path}/${customer.id}")
-                    }
-                )
+                CustomerRoute()
             }
             /*composable("${NavRoute.CustomerDetail.path}/{customerId}") { backStackEntry ->
                 //val customerId = backStackEntry.path<String>("customerId") ?: ""

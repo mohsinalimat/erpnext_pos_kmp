@@ -3,13 +3,16 @@ package com.erpnext.pos.remoteSource.api
 import com.erpnext.pos.BuildKonfig
 import com.erpnext.pos.remoteSource.dto.BinDto
 import com.erpnext.pos.remoteSource.dto.CategoryDto
+import com.erpnext.pos.remoteSource.dto.CustomerDto
 import com.erpnext.pos.remoteSource.dto.ItemDetailDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.dto.ItemPriceDto
 import com.erpnext.pos.remoteSource.dto.LoginInfo
+import com.erpnext.pos.remoteSource.dto.OutstandingInfo
 import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
 import com.erpnext.pos.remoteSource.dto.POSProfileSimpleDto
+import com.erpnext.pos.remoteSource.dto.PendingInvoiceDto
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.dto.UserDto
 import com.erpnext.pos.remoteSource.dto.WarehouseItemDto
@@ -40,7 +43,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class APIService(
     private val client: HttpClient,
@@ -148,21 +153,6 @@ class APIService(
             setBody("token=$accessToken")
         }
         store.clear()
-    }
-
-    suspend fun items(warehouse: String, offset: Int, limit: Int): List<ItemDto> {
-        return clientOAuth.getERPList(
-            doctype = ERPDocType.Item.path,
-            fields = ERPDocType.Item.getFields(),
-            orderBy = "item_name",
-            baseUrl = authStore.getCurrentSite() ?: "",
-            offset = offset,
-            limit = limit,
-            filters = listOf(
-                Filter("warehouse", Operator.EQ, warehouse),
-                Filter("disabled", Operator.EQ, false)
-            )
-        )
     }
 
     suspend fun getCategories(): List<CategoryDto> {
@@ -369,6 +359,91 @@ class APIService(
             discount = 0.0,
             isStocked = processedIsStocked,
             isService = processedIsService
+        )
+    }
+
+    suspend fun getCustomers(): List<CustomerDto> {
+        val url = authStore.getCurrentSite()
+        return clientOAuth.getERPList(
+            ERPDocType.Customer.path,
+            ERPDocType.Customer.getFields(),
+            baseUrl = url,
+            orderBy = "customer_name asc",
+            filters = filters {
+                "disabled" eq false
+            }
+        )
+    }
+
+    //Para Direccion (method para display formatted)
+    suspend fun getCustomerAddress(customer: String): String {
+        val url = authStore.getCurrentSite()
+            ?: throw Exception("URL Invalida")
+        val endpoint = "$url/api/method/frappe.contacts.doctype.address.address.get_address_display"
+        val response = clientOAuth.post(endpoint) {
+            contentType(ContentType.Application.Json)
+            setBody(mapOf(
+                "reference_doctype" to "Customer",
+                "reference_name" to customer
+            ))
+        }.bodyAsText()
+
+        val parsed = json.parseToJsonElement(response).jsonObject
+        return parsed["message"]?.jsonPrimitive?.content ?: ""
+    }
+
+    //Para monto total pendientes y List (method whitelisted)
+    suspend fun getCustomerOutstanding(customer: String): OutstandingInfo {
+        val url = authStore.getCurrentSite()
+        val endpoint =
+            "$url/api/method/erpnext.accounts.doctype.accounts_controller.accounts_controller.get_outstanding_invoices"
+        val response = clientOAuth.post(endpoint) {
+            contentType(ContentType.Application.Json)
+            setBody(
+                mapOf(
+                    "party_type" to "Customer",
+                    "party" to customer
+                )
+            )
+        }.bodyAsText()
+
+        val parsed = json.parseToJsonElement(response).jsonObject
+        val invoices = json.decodeFromJsonElement<List<PendingInvoiceDto>>(
+            parsed["message"] ?: throw FrappeException("No message")
+        )
+        val totalOutstanding = invoices?.sumOf { it.outstandingAmount }
+        return OutstandingInfo(totalOutstanding ?: 0.0, invoices)
+    }
+
+    //Para saldo actual (method whitelisted)
+    suspend fun getCustomerBalance(customer: String): Double {
+        val url = authStore.getCurrentSite()
+        val endpoint = "$url/api/method/erpnext.accounts.utils.get_balance_on"
+        val response = clientOAuth.post(endpoint) {
+            contentType(ContentType.Application.Json)
+            setBody(
+                mapOf(
+                    "party_type" to "Customer",
+                    "party" to customer
+                )
+            )
+        }.bodyAsText()
+
+        val parsed = json.parseToJsonElement(response).jsonObject
+        return parsed["message"]?.jsonPrimitive?.double ?: 0.0
+    }
+
+    //Para facturas pendientes (lista simple de overdue)
+    suspend fun getPendingInvoices(customer: String): List<PendingInvoiceDto> {
+        val url = authStore.getCurrentSite()
+        return clientOAuth.getERPList(
+            doctype = ERPDocType.SalesInvoice.path,
+            fields = ERPDocType.SalesInvoice.getFields(),
+            baseUrl = url,
+            filters = filters {
+                "customer" eq customer
+                "status" in listOf("Overdue", "Unpaid")
+            }
         )
     }
 }

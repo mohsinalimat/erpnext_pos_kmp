@@ -68,6 +68,29 @@ val fields: List<DocTypeFields> = listOf(
     DocTypeFields(
         ERPDocType.ItemPrice,
         listOf("item_code", "uom", "price_list", "price_list_rate", "selling")
+    ),
+    DocTypeFields(
+        ERPDocType.Customer,
+        listOf(
+            "name",
+            "customer_name",
+            "territory",
+            "mobile_no",
+            "phone",
+            "customer_type",
+            "disabled",
+            "credit_limits.credit_limit",
+            "credit_limits.company"
+        )
+    ),
+    DocTypeFields(
+        ERPDocType.SalesInvoice,
+        listOf(
+            "name",
+            "outstanding_amount",
+            "due_date",
+            "status"
+        )
     )
 )
 

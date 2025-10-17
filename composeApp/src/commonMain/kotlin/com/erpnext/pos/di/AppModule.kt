@@ -3,20 +3,26 @@ package com.erpnext.pos.di
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.erpnext.pos.data.AppDatabase
 import com.erpnext.pos.data.DatabaseBuilder
+import com.erpnext.pos.data.repositories.CustomerRepository
 import com.erpnext.pos.data.repositories.InventoryRepository
 import com.erpnext.pos.data.repositories.POSProfileRepository
 import com.erpnext.pos.data.repositories.UserRepository
+import com.erpnext.pos.domain.repositories.ICustomerRepository
 import com.erpnext.pos.domain.repositories.IInventoryRepository
 import com.erpnext.pos.domain.repositories.IPOSRepository
 import com.erpnext.pos.domain.repositories.IUserRepository
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
+import com.erpnext.pos.domain.usecases.FetchCustomerDetailUseCase
+import com.erpnext.pos.domain.usecases.FetchCustomersUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
 import com.erpnext.pos.domain.usecases.FetchPosProfileInfoUseCase
 import com.erpnext.pos.domain.usecases.FetchPosProfileUseCase
 import com.erpnext.pos.domain.usecases.FetchUserInfoUseCase
+import com.erpnext.pos.localSource.datasources.CustomerLocalSource
 import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
+import com.erpnext.pos.remoteSource.datasources.CustomerRemoteSource
 import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
 import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
@@ -95,13 +101,19 @@ val appModule = module {
     //region Inventory DI
     single { InventoryRemoteSource(get(), get()) }
     single<IInventoryRepository> { InventoryRepository(get()) }
-    single { InventoryViewModel(get(), get(), get(),  get(),get()) }
+    single { InventoryViewModel(get(), get(), get(), get(), get()) }
     //endregion
 
     //region POS Profile
     single { POSProfileRemoteSource(get(), get(), get()) }
     single<IPOSRepository> { POSProfileRepository(get()) }
     single { POSProfileViewModel(get(), get(), get()) }
+    //endregion
+
+    //region Customer
+    single { CustomerRemoteSource(get(), get()) }
+    single { CustomerLocalSource(get()) }
+    single<ICustomerRepository> { CustomerRepository(get(), get()) }
     //endregion
 
     //region Home
@@ -111,6 +123,8 @@ val appModule = module {
     //endregion
 
     //region UseCases DI
+    single { FetchCustomersUseCase(get()) }
+    single { FetchCustomerDetailUseCase(get()) }
     single { FetchInventoryItemUseCase(get()) }
     single { FetchCategoriesUseCase(get()) }
     single { FetchPosProfileUseCase(get()) }
