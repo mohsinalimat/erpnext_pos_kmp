@@ -3,6 +3,7 @@ package com.erpnext.pos.remoteSource.api
 import com.erpnext.pos.BuildKonfig
 import com.erpnext.pos.remoteSource.dto.BinDto
 import com.erpnext.pos.remoteSource.dto.CategoryDto
+import com.erpnext.pos.remoteSource.dto.ContactChildDto
 import com.erpnext.pos.remoteSource.dto.CustomerDto
 import com.erpnext.pos.remoteSource.dto.ItemDetailDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
@@ -87,8 +88,13 @@ class APIService(
         pkce: Pkce,
         expectedState: String,
         returnedState: String
-    ): TokenResponse {
+    ): TokenResponse? {
         try {
+            print("OAuthDebug - Client ID: ${oauthConfig.clientId}")
+            print("OAuthDebug - Code: $code")
+            print("OAuthDebug - Redirect URI: ${oauthConfig.redirectUrl}")
+            print("OAuthDebug - Code Verifier: ${pkce.verifier}")
+
             require(expectedState == returnedState) { "CSRF state mismatch" }
             val res = client.post(oauthConfig.tokenUrl) {
                 contentType(ContentType.Application.FormUrlEncoded)
@@ -98,7 +104,6 @@ class APIService(
                     append("redirect_uri", oauthConfig.redirectUrl)
                     append("client_id", oauthConfig.clientId)
                     append("code_verifier", pkce.verifier)
-                    // Si usas cliente confidencial (no PKCE en mobile), añade client_secret:
                     oauthConfig.clientSecret?.let { append("client_secret", it) }
                 }.formUrlEncode())
             }.body<TokenResponse>()
@@ -107,7 +112,7 @@ class APIService(
             return res
         } catch (e: Throwable) {
             e.printStackTrace()
-            return TokenResponse("", "", 0, "", "", "")
+            return null
         }
     }
 
@@ -375,63 +380,22 @@ class APIService(
         )
     }
 
-    //Para Direccion (method para display formatted)
-    suspend fun getCustomerAddress(customer: String): String {
-        val url = authStore.getCurrentSite()
-            ?: throw Exception("URL Invalida")
-        val endpoint = "$url/api/method/frappe.contacts.doctype.address.address.get_address_display"
-        val response = clientOAuth.post(endpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(mapOf(
-                "reference_doctype" to "Customer",
-                "reference_name" to customer
-            ))
-        }.bodyAsText()
-
-        val parsed = json.parseToJsonElement(response).jsonObject
-        return parsed["message"]?.jsonPrimitive?.content ?: ""
-    }
-
     //Para monto total pendientes y List (method whitelisted)
     suspend fun getCustomerOutstanding(customer: String): OutstandingInfo {
         val url = authStore.getCurrentSite()
-        val endpoint =
-            "$url/api/method/erpnext.accounts.doctype.accounts_controller.accounts_controller.get_outstanding_invoices"
-        val response = clientOAuth.post(endpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(
-                mapOf(
-                    "party_type" to "Customer",
-                    "party" to customer
-                )
-            )
-        }.bodyAsText()
-
-        val parsed = json.parseToJsonElement(response).jsonObject
-        val invoices = json.decodeFromJsonElement<List<PendingInvoiceDto>>(
-            parsed["message"] ?: throw FrappeException("No message")
+        val invoices = clientOAuth.getERPList<PendingInvoiceDto>(
+            doctype = ERPDocType.SalesInvoice.path,
+            fields = ERPDocType.SalesInvoice.getFields(),
+            baseUrl = url,
+            filters = filters {
+                "customer" eq customer
+                "status" `in` listOf("Unpaid", "Overdue")
+            }
         )
-        val totalOutstanding = invoices?.sumOf { it.outstandingAmount }
-        return OutstandingInfo(totalOutstanding ?: 0.0, invoices)
+        val totalOutstanding = invoices.sumOf { it.total - it.paidAmount }
+        return OutstandingInfo(totalOutstanding, invoices)
     }
 
-    //Para saldo actual (method whitelisted)
-    suspend fun getCustomerBalance(customer: String): Double {
-        val url = authStore.getCurrentSite()
-        val endpoint = "$url/api/method/erpnext.accounts.utils.get_balance_on"
-        val response = clientOAuth.post(endpoint) {
-            contentType(ContentType.Application.Json)
-            setBody(
-                mapOf(
-                    "party_type" to "Customer",
-                    "party" to customer
-                )
-            )
-        }.bodyAsText()
-
-        val parsed = json.parseToJsonElement(response).jsonObject
-        return parsed["message"]?.jsonPrimitive?.double ?: 0.0
-    }
 
     //Para facturas pendientes (lista simple de overdue)
     suspend fun getPendingInvoices(customer: String): List<PendingInvoiceDto> {

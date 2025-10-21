@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class POSProfileSimpleDto(
     @SerialName("name") val profileName: String,
+    @SerialName("warehouse")
     val warehouse: String,
     val country: String,
     @Serializable(with = IntAsBooleanSerializer::class) val disabled: Boolean,
@@ -16,6 +17,7 @@ data class POSProfileSimpleDto(
 @Serializable
 data class POSProfileDto(
     @SerialName("name") val profileName: String,
+    @SerialName("warehouse")
     val warehouse: String,
     val country: String,
     @Serializable(with = IntAsBooleanSerializer::class) val disabled: Boolean,

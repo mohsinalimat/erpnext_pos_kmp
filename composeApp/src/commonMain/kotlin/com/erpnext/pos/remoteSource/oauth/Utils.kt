@@ -29,7 +29,7 @@ suspend fun buildAuthorizeRequest(
         "scope" to (scopeOverride ?: cfg.scopes).joinToString(" "),
         "state" to state,
         //"code_challenge_method" to pkce.method.lowercase(),
-        // "code_challenge" to pkce.challenge
+        //"code_challenge" to pkce.challenge
     ).joinToString("&") { "${it.first}=${encode(it.second)}" }
     return AuthRequest("${cfg.authorizeUrl}?$query", state, pkce)
 }

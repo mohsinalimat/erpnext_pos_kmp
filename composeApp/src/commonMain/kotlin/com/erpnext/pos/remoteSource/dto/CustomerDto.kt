@@ -16,9 +16,18 @@ data class CustomerDto(
     @SerialName("customer_type")
     val customerType: String,
     @SerialName("disabled")
+    @Serializable(IntAsBooleanSerializer::class)
     val disabled: Boolean = false,
-    @SerialName("credit_limits")
-    val creditLimits: List<CreditLimitChildDto>? = null,
-    @SerialName("addresses")  // Fetch separate, but include if method returns
-    val addresses: List<AddressChildDto>? = null
+    @SerialName("credit_limit")
+    val creditLimit: Double? = null,
+)
+
+@Serializable
+data class ContactChildDto(
+    @SerialName("name")
+    val name: String,
+    @SerialName("mobile_no")
+    val mobileNo: String? = null,
+    @SerialName("email_id")
+    val email: String? = null
 )

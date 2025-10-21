@@ -25,9 +25,8 @@ import com.erpnext.pos.domain.models.POSProfileBO
 import com.erpnext.pos.domain.models.PaymentModesBO
 import com.erpnext.pos.remoteSource.dto.BalanceDetailsDto
 import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
-import io.ktor.util.date.GMTDate
+import com.erpnext.pos.views.CashBoxManager
 import io.ktor.util.date.getTimeMillis
-import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,14 +40,18 @@ fun HomeScreen(
     var isOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        actions.loadUserInfo()
-        actions.loadPOSProfile()
+        //actions.loadPOSProfile()
+        //actions.loadUserInfo()
         isOpen = actions.isCashboxOpen()
     }
 
     LaunchedEffect(uiState) {
         if (uiState is HomeState.POSProfiles && currentProfiles.isEmpty()) {
             currentProfiles = uiState.posProfiles
+        }
+
+        if (uiState is HomeState.CashboxState) {
+            isOpen = uiState.isOpen
         }
     }
 
@@ -93,7 +96,7 @@ fun HomeScreen(
                     strokeWidth = 2.dp
                 )
 
-                is HomeState.Success, is HomeState.POSProfiles, is HomeState.POSInfoLoaded, is HomeState.POSInfoLoading -> {
+                is HomeState.Success, is HomeState.POSProfiles, is HomeState.POSInfoLoaded, is HomeState.POSInfoLoading, is HomeState.CashboxState -> {
                     // Saludo y banners
                     Column(
                         modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start
@@ -193,8 +196,8 @@ fun HomeScreen(
                         pos.name,
                         pos.company,
                         getTimeMillis(),
-                        pos.name,
-                        true,
+                        user = null,
+                        status = true,
                         amounts.map { BalanceDetailsDto(it.mode.name, it.amount) })
                     actions.openCashbox(openEntry)
                 }, onDismiss = {
@@ -308,7 +311,7 @@ fun POSProfileDialog(
                                         },
                                         placeholder = "0.0",
                                         modifier = Modifier.width(100.dp),
-                                        currencySymbol = uiState.currency.toSymbol()
+                                        currencySymbol = uiState.currency.toCurrencySymbol()
                                     )
                                 }
                             }
@@ -448,7 +451,7 @@ data class PaymentModeWithAmount(
     val mode: PaymentModesBO, val amount: Double
 )
 
-fun String.toSymbol(): String {
+fun String.toCurrencySymbol(): String {
     return when (this) {
         "NIO" -> "C$"
         "USD" -> "$"

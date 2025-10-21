@@ -20,9 +20,9 @@ interface POSProfileDao {
     suspend fun getActiveProfile(): POSProfileEntity?
 
     @Transaction
-    suspend fun updateProfileState(profile: String, status: Boolean) {
+    suspend fun updateProfileState(user: String, profile: String, status: Boolean) {
         val activeProfile = getPOSProfile(profile)
-        update(activeProfile.copy(active = status))
+        update(activeProfile.copy(active = status, user = user))
     }
 
     @Update

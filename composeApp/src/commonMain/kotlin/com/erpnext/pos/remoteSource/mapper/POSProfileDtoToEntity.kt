@@ -21,6 +21,7 @@ fun POSProfileDto.toEntity(): POSProfileEntity {
         company = this.company,
         currency = this.currency,
         defaultCurrency = this.currency,
+        user = ""
     )
 }
 

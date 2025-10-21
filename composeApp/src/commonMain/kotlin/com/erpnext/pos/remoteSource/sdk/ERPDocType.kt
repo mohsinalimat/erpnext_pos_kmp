@@ -9,6 +9,7 @@ enum class ERPDocType(val path: String) {
     User("User"),
     Bin("Bin"),
     Customer("Customer"),
+    CustomerContact("Contact"),
     SalesInvoice("Sales Invoice"),
     PurchaseInvoice("Purchase Invoice"),
     StockEntry("Stock Entry"),
@@ -86,10 +87,19 @@ val fields: List<DocTypeFields> = listOf(
         ERPDocType.SalesInvoice,
         listOf(
             "name",
-            "outstanding_amount",
+            "customer",
+            "status",
             "due_date",
-            "status"
+            "pos_profile",
+            "rounded_total",
+            "paid_amount",
+            "outstanding_amount",
+            "party_account_currency"
         )
+    ),
+    DocTypeFields(
+        ERPDocType.CustomerContact,
+        listOf("phone", "mobile_no", "email_id")
     )
 )
 

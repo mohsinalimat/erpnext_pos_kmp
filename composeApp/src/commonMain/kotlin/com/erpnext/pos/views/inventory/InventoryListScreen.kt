@@ -121,9 +121,9 @@ fun InventoryScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
 
-    LaunchedEffect(Unit) {
+   /* LaunchedEffect(Unit) {
         actions.fetchAll()
-    }
+    }*/
 
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),

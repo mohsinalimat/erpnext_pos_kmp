@@ -47,14 +47,17 @@ class LoginViewModel(
                     authRequest.state,
                     authRequest.state
                 )
-
-                _stateFlow.update { LoginState.Authenticated(tokens) }
+                if (tokens != null) {
+                    _stateFlow.update { LoginState.Authenticated(tokens) }
+                } else {
+                    _stateFlow.update { LoginState.Error("Error durante la autenticación") }
+                }
             } catch (e: Exception) {
                 _stateFlow.update {
                     LoginState.Error(
                         e.message ?: "Error durante la autenticación"
                     )
-            }
+                }
             }
         }
     }

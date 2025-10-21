@@ -5,7 +5,7 @@ data class OAuthConfig(
     val clientId: String,
     val clientSecret: String? = null,
     val redirectUrl: String,
-    val scopes: List<String> = listOf("all")
+    val scopes: List<String> = listOf("all", "openid")
 ) {
     val authorizeUrl = "$baseUrl/api/method/frappe.integrations.oauth2.authorize"
     val tokenUrl = "$baseUrl/api/method/frappe.integrations.oauth2.get_token"

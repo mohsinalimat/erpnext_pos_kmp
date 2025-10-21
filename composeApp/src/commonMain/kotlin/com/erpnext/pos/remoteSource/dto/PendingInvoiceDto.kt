@@ -7,10 +7,18 @@ import kotlinx.serialization.Serializable
 data class PendingInvoiceDto(
     @SerialName("name")
     val name: String,
-    @SerialName("outstanding_amount")
-    val outstandingAmount: Double,
+    @SerialName("customer")
+    val customer: String,
+    @SerialName("status")
+    val status: String,
     @SerialName("due_date")
     val dueDate: String,
-    @SerialName("status")
-    val status: String
+    @SerialName("pos_profile")
+    val posProfile: String,
+    @SerialName("rounded_total")
+    val total: Double,
+    @SerialName("paid_amount")
+    val paidAmount: Double,
+    @SerialName("party_account_currency")
+    val currency: String
 )

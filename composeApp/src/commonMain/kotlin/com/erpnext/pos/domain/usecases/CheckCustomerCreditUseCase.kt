@@ -14,6 +14,7 @@ class CheckCustomerCreditUseCase(
     override suspend fun useCaseFunction(input: CustomerCreditInput): Boolean {
         val customer = repo.getCustomerByName(input.customerId) ?: return false
         val totalSale = input.amount
-        return (customer.availableCredit >= totalSale)
+        val totalPending = customer.totalPendingAmount
+        return (customer.availableCredit - totalPending >= totalSale)
     }
 }

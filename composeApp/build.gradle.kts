@@ -119,6 +119,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.android)
 
             implementation(libs.security.crypto)
+            implementation(libs.android.tink)
 
             implementation(libs.androidx.room.runtime)
             //ksp(libs.androidx.room.compiler)

@@ -6,15 +6,11 @@ data class CustomerBO(
     val territory: String? = null,
     val mobileNo: String?,
     val customerType: String,
-    val creditLimit: List<CreditLimit> = emptyList(),  // BO version
+    val creditLimit: Double? = 0.0,  // BO version
     val totalPendingAmount: Double = 0.0,
     val address: String? = "",  // Combined from child, e.g., addressLine1 + city
     val currentBalance: Double = 0.0,  // total_outstanding
     val pendingInvoices: Int = 0,  // total monto pendiente
-    val availableCredit: Double = 0.0  // credit_limit - currentBalance
-)
-
-data class CreditLimit(
-    val creditLimit: Double,
-    val company: String? = null
+    val availableCredit: Double = 0.0, // credit_limit - currentBalance
+    val currency: String = "NIO"
 )

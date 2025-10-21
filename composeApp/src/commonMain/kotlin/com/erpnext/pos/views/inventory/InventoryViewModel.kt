@@ -2,20 +2,11 @@
 
 package com.erpnext.pos.views.inventory
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import androidx.paging.map
 import com.erpnext.pos.base.BaseViewModel
-import com.erpnext.pos.domain.models.CategoryBO
 import com.erpnext.pos.domain.models.ItemBO
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
@@ -26,7 +17,6 @@ import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
 import com.erpnext.pos.views.CashBoxManager
 import com.erpnext.pos.views.CashBoxState
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -40,7 +30,7 @@ class InventoryViewModel(
     private val navManager: NavigationManager,
     private val fetchCategoryUseCase: FetchCategoriesUseCase,
     private val fetchInventoryItemUseCase: FetchInventoryItemUseCase,
-    private val cashBoxManager: CashBoxManager,
+    private val cashboxManager: CashBoxManager,
     private val authStore: AuthInfoStore
 ) : BaseViewModel() {
 
@@ -57,20 +47,28 @@ class InventoryViewModel(
 
     init {
         viewModelScope.launch {
+            fetchAllItems()
+
             combine(searchFilter, categoryFilter) { query, category ->
                 query to category
             }.debounce(350).collectLatest { (query, category) ->
                 applyLocalFilter(query, category)
             }
 
-            cashBoxManager.cashboxState.collectLatest { state ->
+            // cashboxManager.isCashBoxOpen()
+            cashboxManager.cashboxState.collectLatest { state ->
                 when (state) {
                     is CashBoxState.Opened -> {
                         warehouseId = state.warehouse
                         priceList = state.priceList
+                        // Refresh inventory con new warehouse/priceList
+                        refresh()
                     }
 
-                    else -> state
+                    is CashBoxState.Closed -> {
+                        warehouseId = null
+                        priceList = null
+                    }
                 }
             }
         }
@@ -138,6 +136,6 @@ class InventoryViewModel(
     }
 
     fun onError(message: String) {
-        print("InventoryViewModel onError = ${message}")
+        print("InventoryViewModel onError = $message")
     }
 }

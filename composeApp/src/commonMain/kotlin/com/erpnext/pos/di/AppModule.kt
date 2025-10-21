@@ -90,7 +90,7 @@ val appModule = module {
             "./prefs.preferences_pb".toPath()
         }
     }
-    single<CashBoxManager> { CashBoxManager(get(), get()) }
+    single<CashBoxManager> { CashBoxManager(get(), get(), get()) }
     //endregion
 
     //region Login DI

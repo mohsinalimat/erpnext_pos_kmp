@@ -8,9 +8,10 @@ data class CustomerEntity(
     @PrimaryKey val name: String,
     val customerName: String,
     val territory: String?,
+    val email: String?,
     val mobileNo: String?,
     val customerType: String,
-    val creditLimit: Double,
+    val creditLimit: Double? = null,
     val currentBalance: Double,
     val totalPendingAmount: Double,  // Sum outstanding_amount
     val pendingInvoicesCount: Int,

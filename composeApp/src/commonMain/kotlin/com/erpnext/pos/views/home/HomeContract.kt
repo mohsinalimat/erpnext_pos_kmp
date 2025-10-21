@@ -7,6 +7,7 @@ import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 sealed class HomeState {
     object Loading : HomeState()
     data class Success(val user: UserBO) : HomeState()
+    data class CashboxState(val isOpen: Boolean) : HomeState()
     object LoadingProfiles : HomeState()
     object POSInfoLoading : HomeState()
     data class POSInfoLoaded(val info: POSProfileBO, val currency: String) : HomeState()

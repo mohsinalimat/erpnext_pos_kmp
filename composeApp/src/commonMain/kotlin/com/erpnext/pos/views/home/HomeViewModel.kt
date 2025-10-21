@@ -14,6 +14,7 @@ import com.erpnext.pos.views.CashBoxManager
 import com.erpnext.pos.views.CashBoxState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -30,17 +31,42 @@ class HomeViewModel(
     private var userInfo: UserBO = UserBO("", "", "", "", "", "", false)
     private var posProfiles: List<POSProfileBO> = emptyList()
 
+    init {
+        viewModelScope.launch {
+            loadUserInfo()
+            loadPOSProfile()
+            isCashboxOpen()  // Suspend OK en coroutine
+        }
+        collectCashBoxState()
+    }
+
+    private fun collectCashBoxState() {
+        viewModelScope.launch {
+            cashboxManager.observeCashBoxState().collectLatest { state ->
+                when (state) {
+                    is CashBoxState.Opened -> {
+                        _stateFlow.update { HomeState.CashboxState(true) }
+                    }
+
+                    is CashBoxState.Closed -> {
+                        _stateFlow.update { HomeState.CashboxState(false) }
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun isCashboxOpen(): Boolean = cashboxManager.isCashBoxOpen()
+
     fun loadUserInfo() {
         _stateFlow.update { HomeState.Loading }
         executeUseCase(action = {
             userInfo = fetchUserInfoUseCase.invoke(null)
             _stateFlow.update { HomeState.Success(userInfo) }
-        }, exceptionHandler = {
-            _stateFlow.update { state -> HomeState.Error(it.message ?: "Error") }
+        }, exceptionHandler = { e ->
+            _stateFlow.update { HomeState.Error(e.message ?: "Error") }
         })
     }
-
-    suspend fun isCashboxOpen(): Boolean = cashboxManager.isCashBoxOpen()
 
     fun resetToInitialState() {
         _stateFlow.update { HomeState.POSProfiles(posProfiles) }
@@ -52,8 +78,8 @@ class HomeViewModel(
         executeUseCase(action = {
             posProfiles = fetchPosProfileUseCase.invoke(null)
             _stateFlow.update { HomeState.POSProfiles(posProfiles) }
-        }, exceptionHandler = {
-            _stateFlow.update { state -> HomeState.Error(it.message ?: "Error") }
+        }, exceptionHandler = { e ->
+            _stateFlow.update { HomeState.Error(e.message ?: "Error") }
         })
     }
 
@@ -77,5 +103,9 @@ class HomeViewModel(
         }
     }
 
-    fun closeCashbox() {}
+    fun closeCashbox() {
+        viewModelScope.launch {
+            cashboxManager.closeCashBox(userId = userInfo.username)  // Asume userInfo tiene username
+        }
+    }
 }

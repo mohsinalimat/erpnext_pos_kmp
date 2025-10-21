@@ -20,7 +20,7 @@ class AndroidAuthNavigator() : AuthNavigator {
         Log.d(
             "OAuthIntentDebug",
             "Component: ${intent.component}"
-        ) // Será null para intents implícitos
+        )
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
     }
