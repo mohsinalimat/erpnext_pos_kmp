@@ -24,10 +24,11 @@ fun rememberInventoryActions(coordinator: InventoryCoordinator): InventoryAction
             fetchAll = coordinator::fetchInventory,
             onError = coordinator::onError,
             onClearSearch = coordinator::onClearSearch,
+            onItemClick = coordinator::onItemClick,
+            isCashboxOpen = coordinator::isCashboxOpen,
             onPrint = coordinator::onPrint,
             getDetails = coordinator::getItemDetails,
             onRefresh = coordinator::onRefresh,
-            fetchBaseUrl = coordinator::fetchBaseUrl,
             onSearchQueryChanged = coordinator::onSearchQueryChanged,
             onCategorySelected = coordinator::onCategorySelected
         )

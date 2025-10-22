@@ -11,6 +11,7 @@ import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.paging.InventoryRemoteMediator
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onStart
 
 @OptIn(ExperimentalPagingApi::class)
 class InventoryRemoteSource(
@@ -22,11 +23,19 @@ class InventoryRemoteSource(
         priceList: String? = null
     ): Flow<PagingData<ItemEntity>> {
         return Pager(
-            config = PagingConfig(pageSize = 20),
-            remoteMediator = InventoryRemoteMediator(apiService, warehouseId, priceList, itemDao)
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 40
+            ),
+            remoteMediator = InventoryRemoteMediator(apiService, itemDao, warehouseId, priceList),
+            initialKey = null
         ) {
             itemDao.getAllItems()
-        }.flow
+        }.flow.onStart {
+            emit(PagingData.empty())
+        }
     }
 
     suspend fun getItemDetail(itemId: String): ItemDto {

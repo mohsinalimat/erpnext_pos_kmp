@@ -18,8 +18,9 @@ data class InventoryAction(
     val onSearchQueryChanged: (String) -> Unit = {},
     val onRefresh: () -> Unit = {},
     val onPrint: () -> Unit = {},
+    val onItemClick: (ItemBO) -> Unit = {},
+    val isCashboxOpen: () -> Unit = {},
     val onClearSearch: () -> Unit = {},
-    val fetchBaseUrl: suspend () -> String = { -> "" },
     val fetchAll: () -> Unit = { },
     val getDetails: (String) -> Unit = { },
     val onError: (error: String) -> Unit = {}

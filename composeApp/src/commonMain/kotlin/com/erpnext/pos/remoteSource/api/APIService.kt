@@ -232,6 +232,7 @@ class APIService(
         limit: Int = 20
     ): List<WarehouseItemDto> {
         val url = authStore.getCurrentSite() ?: throw Exception("URL Invalida")
+        require(!warehouse.isNullOrEmpty()) { "Bodega es requerida para la carga de productos" }
 
         // Fetch Bins
         val bins = clientOAuth.getERPList<BinDto>(
@@ -242,8 +243,7 @@ class APIService(
             orderBy = "item_code",
             baseUrl = url
         ) {
-            if (warehouse != null)
-                "warehouse" eq warehouse
+            "warehouse" eq warehouse
             "actual_qty" gt 0.0
         }
 

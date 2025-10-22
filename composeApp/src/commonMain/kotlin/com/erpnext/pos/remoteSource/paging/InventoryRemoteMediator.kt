@@ -16,72 +16,71 @@ import kotlinx.io.IOException
 @OptIn(ExperimentalPagingApi::class)
 class InventoryRemoteMediator(
     private val apiService: APIService,
+    private val itemDao: ItemDao,
     private val warehouseId: String? = null,
     private val priceList: String? = null,
-    private val itemDao: ItemDao,
     private val pageSize: Int = 20,
-    /**
-     * Si true y un REFRESH devuelve lista vacía, preservamos el cache local (no borramos).
-     * Si false, borramos siempre la cache en REFRESH.
-     */
     private val preserveCacheOnEmptyRefresh: Boolean = true
 ) : RemoteMediator<Int, ItemEntity>() {
 
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, ItemEntity>
-    ): MediatorResult = withContext(Dispatchers.IO) {
-        try {
-            val offset = when (loadType) {
-                LoadType.REFRESH -> 0
-                LoadType.PREPEND -> {
+    ): MediatorResult {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Determine offset using DB count — efficient for append (keeps continuity).
+                val offset = when (loadType) {
+                    LoadType.REFRESH -> 0
+                    LoadType.PREPEND -> return@withContext MediatorResult.Success(
+                        endOfPaginationReached = true
+                    )
+
+                    LoadType.APPEND -> itemDao.countAll()
+                }
+
+                // Defensive check: warehouse required for remote call
+                if (warehouseId.isNullOrBlank()) {
+                    // No remote fetch; treat as successful but no remote data
                     return@withContext MediatorResult.Success(endOfPaginationReached = true)
                 }
 
-                LoadType.APPEND -> {
-                    val countInDb = itemDao.countAll()
-                    println("RemoteMediator: APPEND - countInDb=$countInDb (usado como limit_start)")
-                    countInDb
-                }
-            }
+                // Remote fetch
+                val fetched = apiService.getInventoryForWarehouse(
+                    warehouse = warehouseId,
+                    priceList = priceList,
+                    offset = offset,
+                    limit = pageSize
+                )
 
-            val itemsDto = apiService.getInventoryForWarehouse(
-                warehouse = warehouseId,
-                priceList = priceList,
-                offset = offset,
-                limit = pageSize
-            )
+                val entities = fetched.toEntity()
+                val endReached = entities.isEmpty() || entities.size < pageSize
 
-            val entities = itemsDto.toEntity()
-            val endOfPaginationReached = entities.isEmpty() || entities.size < pageSize
+                when (loadType) {
+                    LoadType.REFRESH -> {
+                        if (!preserveCacheOnEmptyRefresh || entities.isNotEmpty()) {
+                            itemDao.deleteAll()
+                            if (entities.isNotEmpty()) itemDao.addItems(entities)
+                        } // else preserve local cache when refresh yields empty (useful for partial offline)
+                    }
 
-            when (loadType) {
-                LoadType.REFRESH -> {
-                    if (!preserveCacheOnEmptyRefresh || entities.isNotEmpty()) {
-                        itemDao.deleteAll()
+                    LoadType.APPEND -> {
                         if (entities.isNotEmpty()) itemDao.addItems(entities)
-                    } else {
-                        println("RemoteMediator: REFRESH returned empty, preserving local cache")
                     }
+
+                    else -> Unit
                 }
 
-                else -> {
-                    if (entities.isNotEmpty()) {
-                        itemDao.addItems(entities)
-                    }
-                }
+                MediatorResult.Success(endOfPaginationReached = endReached)
+            } catch (e: IOException) {
+                MediatorResult.Error(e)
+            } catch (e: Exception) {
+                MediatorResult.Error(e)
             }
-
-            val totalAfter = itemDao.countAll()
-            println("RemoteMediator: loadType=$loadType | offset=$offset | fetched=${entities.size} | totalInDb=$totalAfter")
-
-            MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            MediatorResult.Error(e)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            MediatorResult.Error(e)
         }
+    }
+
+    override suspend fun initialize(): InitializeAction {
+        return InitializeAction.LAUNCH_INITIAL_REFRESH
     }
 }

@@ -59,6 +59,9 @@ kotlin {
 
         commonMain.dependencies {
 
+            //Test
+            implementation("dev.materii.pullrefresh:pullrefresh:1.0.0")
+
             implementation(libs.androidx.paging.common)
             // Si usas UI Compose multiplataforma:
             implementation(libs.androidx.paging.compose)

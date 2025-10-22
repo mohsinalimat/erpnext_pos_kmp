@@ -2,6 +2,7 @@ package com.erpnext.pos.views.inventory
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.erpnext.pos.domain.models.ItemBO
 import org.koin.compose.viewmodel.koinViewModel
 
 class InventoryCoordinator(
@@ -33,13 +34,14 @@ class InventoryCoordinator(
         viewModel.refresh()
     }
 
-    suspend fun fetchBaseUrl(): String {
-        return viewModel.fetchBaseUrl()
-    }
-
     fun onError(message: String) {
         viewModel.onError(message)
     }
+
+    fun isCashboxOpen() {
+    }
+
+    fun onItemClick(item: ItemBO) {}
 }
 
 @Composable
