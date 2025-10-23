@@ -6,10 +6,12 @@ import com.erpnext.pos.data.DatabaseBuilder
 import com.erpnext.pos.data.repositories.CustomerRepository
 import com.erpnext.pos.data.repositories.InventoryRepository
 import com.erpnext.pos.data.repositories.POSProfileRepository
+import com.erpnext.pos.data.repositories.SalesInvoiceRepository
 import com.erpnext.pos.data.repositories.UserRepository
 import com.erpnext.pos.domain.repositories.ICustomerRepository
 import com.erpnext.pos.domain.repositories.IInventoryRepository
 import com.erpnext.pos.domain.repositories.IPOSRepository
+import com.erpnext.pos.domain.repositories.ISaleInvoiceRepository
 import com.erpnext.pos.domain.repositories.IUserRepository
 import com.erpnext.pos.domain.usecases.CheckCustomerCreditUseCase
 import com.erpnext.pos.domain.usecases.CustomerSearchUseCase
@@ -17,6 +19,7 @@ import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomerDetailUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomersUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
+import com.erpnext.pos.domain.usecases.FetchPendingInvoiceUseCase
 import com.erpnext.pos.domain.usecases.FetchPosProfileInfoUseCase
 import com.erpnext.pos.domain.usecases.FetchPosProfileUseCase
 import com.erpnext.pos.domain.usecases.FetchUserInfoUseCase
@@ -26,6 +29,7 @@ import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
 import com.erpnext.pos.remoteSource.datasources.CustomerRemoteSource
 import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
+import com.erpnext.pos.remoteSource.datasources.InvoiceRemoteSource
 import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
 import com.erpnext.pos.views.CashBoxManager
@@ -33,6 +37,7 @@ import com.erpnext.pos.views.customer.CustomerViewModel
 import com.erpnext.pos.views.home.HomeViewModel
 import com.erpnext.pos.views.home.POSProfileViewModel
 import com.erpnext.pos.views.inventory.InventoryViewModel
+import com.erpnext.pos.views.invoice.InvoiceViewModel
 import com.erpnext.pos.views.login.LoginViewModel
 import com.erpnext.pos.views.splash.SplashViewModel
 import io.ktor.client.HttpClient
@@ -126,8 +131,15 @@ val appModule = module {
     single<IUserRepository> { UserRepository(get()) }
     //endregion
 
+    //region Invoices
+    single { InvoiceRemoteSource(get(), get()) }
+    single { InvoiceViewModel(get(), get(), get()) }
+    single<ISaleInvoiceRepository> { SalesInvoiceRepository(get()) }
+    //endregion
+
     //region UseCases DI
     single { CheckCustomerCreditUseCase(get()) }
+    single { FetchPendingInvoiceUseCase(get()) }
     single { CustomerSearchUseCase(get()) }
     single { FetchCustomersUseCase(get()) }
     single { FetchCustomerDetailUseCase(get()) }

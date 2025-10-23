@@ -15,5 +15,7 @@ data class ItemPriceDto(
     val priceListRate: Double,
     @SerialName("selling")
     @Serializable(with = IntAsBooleanSerializer::class)
-    val selling: Boolean = true
+    val selling: Boolean = true,
+    @SerialName("currency")
+    val currency: String
 )

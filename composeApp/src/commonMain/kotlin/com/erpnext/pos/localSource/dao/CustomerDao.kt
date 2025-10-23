@@ -18,6 +18,6 @@ interface CustomerDao {
     @Query("SELECT * FROM customers WHERE territory = :territory AND customerName LIKE '%' || :search || '%' ORDER BY customerName ASC")
     fun getByTerritory(territory: String, search: String): Flow<List<CustomerEntity>>
 
-    @Query("SELECT * FROM customers WHERE name = :name")
+    @Query("SELECT * FROM customers WHERE customerName = :name")
     suspend fun getByName(name: String): CustomerEntity?
 }

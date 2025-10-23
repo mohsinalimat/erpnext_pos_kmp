@@ -29,5 +29,6 @@ data class WarehouseItemDto(
     val isStocked: Boolean = false,  // De is_stock_item
     @SerialName("stock_uom")
     val stockUom: String,
-    val brand: String = ""
+    val brand: String = "",
+    val currency: String = "" // Inferido
 )

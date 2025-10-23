@@ -9,6 +9,7 @@ import com.erpnext.pos.localSource.dao.CustomerDao
 import com.erpnext.pos.localSource.dao.ItemDao
 import com.erpnext.pos.localSource.dao.POSProfileDao
 import com.erpnext.pos.localSource.dao.PaymentModesDao
+import com.erpnext.pos.localSource.dao.PendingInvoiceDao
 import com.erpnext.pos.localSource.dao.UserDao
 import com.erpnext.pos.localSource.entities.BalanceDetailsEntity
 import com.erpnext.pos.localSource.entities.CashboxEntity
@@ -31,11 +32,11 @@ import com.erpnext.pos.localSource.entities.UserEntity
         POSInvoiceEntity::class,
         POSInvoiceItemEntity::class,
         POSInvoicePaymentEntity::class,
-        SalesInvoiceEntity::class,
         CashboxEntity::class,
         BalanceDetailsEntity::class,
-        CustomerEntity::class
-    ], version = 20,
+        CustomerEntity::class,
+        SalesInvoiceEntity::class
+    ], version = 25,
     exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -46,6 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun paymentModesDao(): PaymentModesDao
     abstract fun cashboxDao(): CashboxDao
     abstract fun customerDao(): CustomerDao
+    abstract fun pendingInvoiceDao(): PendingInvoiceDao
 }
 
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {

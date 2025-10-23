@@ -21,4 +21,5 @@ val androidModule = module {
     single { get<AppDatabase>().paymentModesDao() }
     single { get<AppDatabase>().cashboxDao() }
     single { get<AppDatabase>().customerDao() }
+    single { get<AppDatabase>().pendingInvoiceDao() }
 }

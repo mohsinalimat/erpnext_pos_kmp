@@ -6,8 +6,10 @@ import com.erpnext.pos.domain.models.CategoryBO
 import com.erpnext.pos.domain.models.ItemBO
 import com.erpnext.pos.domain.models.POSProfileBO
 import com.erpnext.pos.domain.models.PaymentModesBO
+import com.erpnext.pos.domain.models.PendingInvoiceBO
 import com.erpnext.pos.domain.models.UserBO
 import com.erpnext.pos.localSource.entities.ItemEntity
+import com.erpnext.pos.localSource.entities.SalesInvoiceEntity
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
@@ -17,6 +19,15 @@ import com.erpnext.pos.remoteSource.dto.UserDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 import kotlin.jvm.JvmName
+
+@JvmName("toPagingFlowPendingInvoiceBO")
+fun Flow<PagingData<SalesInvoiceEntity>>.toPagingBO(): Flow<PagingData<PendingInvoiceBO>> {
+    return transform { value ->
+        emit(value.map {
+            it.toBO()
+        })
+    }
+}
 
 fun Flow<PagingData<ItemEntity>>.toPagingBO(): Flow<PagingData<ItemBO>> {
     return transform { value ->
@@ -83,9 +94,30 @@ fun ItemDto.toBO(): ItemBO {
     )
 }
 
+@JvmName("toBOSalesInvoiceEntity")
+fun SalesInvoiceEntity.toBO(): PendingInvoiceBO {
+    return PendingInvoiceBO(
+        invoiceId = this.invoiceId,
+        customerId = this.customer,
+        customer = this.customerName,
+        customerPhone = this.customerPhone,
+        postingDate = this.postingDate,
+        dueDate = this.dueDate,
+        outstandingAmount = this.outstandingAmount,
+        netTotal = this.netTotal,
+        total = this.grandTotal,
+        paidAmount = this.paidAmount,
+        isPos = this.isPOS,
+        currency = this.currency,
+        docStatus = this.docStatus,
+        status = this.status
+    )
+}
+
 fun ItemEntity.toBO(): ItemBO {
     return ItemBO(
         name = this.name,
+        currency = this.currency,
         actualQty = this.actualQty,
         uom = this.stockUom,
         brand = this.brand,

@@ -68,7 +68,7 @@ val fields: List<DocTypeFields> = listOf(
     ),
     DocTypeFields(
         ERPDocType.ItemPrice,
-        listOf("item_code", "uom", "price_list", "price_list_rate", "selling")
+        listOf("item_code", "uom", "price_list", "price_list_rate", "selling", "currency")
     ),
     DocTypeFields(
         ERPDocType.Customer,
@@ -88,13 +88,20 @@ val fields: List<DocTypeFields> = listOf(
         listOf(
             "name",
             "customer",
-            "status",
+            "customer_name",
+            "posting_date",
             "due_date",
-            "pos_profile",
-            "rounded_total",
-            "paid_amount",
+            "status",
             "outstanding_amount",
-            "party_account_currency"
+            "grand_total",
+            "paid_amount",
+            "net_total",
+            "is_pos",
+            "pos_profile",
+            "docstatus",
+            "contact_display",
+            "contact_mobile",
+            "party_account_currency",
         )
     ),
     DocTypeFields(

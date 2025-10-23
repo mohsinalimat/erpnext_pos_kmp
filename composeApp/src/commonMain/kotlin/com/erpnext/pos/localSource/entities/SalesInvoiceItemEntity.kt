@@ -2,16 +2,17 @@ package com.erpnext.pos.localSource.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @Entity(tableName = "tabSalesInvoice")
-data class SalesInvoiceEntity @OptIn(ExperimentalTime::class) constructor(
+data class SalesInvoiceEntity(
 
-    @PrimaryKey
-    @ColumnInfo(name = "id")
-    val id: String,   // Local UUID
+    @PrimaryKey(autoGenerate = false)
+    @ColumnInfo(name = "invoice_id")
+    val invoiceId: String,
 
     @ColumnInfo(name = "posting_date")
     val postingDate: String, // "YYYY-MM-DD"
@@ -24,6 +25,12 @@ data class SalesInvoiceEntity @OptIn(ExperimentalTime::class) constructor(
 
     @ColumnInfo(name = "customer_name")
     val customerName: String? = null,
+
+    @ColumnInfo(name = "customer_phone")
+    val customerPhone: String? = null,
+
+    @ColumnInfo(name = "due_date")
+    val dueDate: String? = null,
 
     @ColumnInfo(name = "currency")
     val currency: String = "USD",
@@ -41,12 +48,12 @@ data class SalesInvoiceEntity @OptIn(ExperimentalTime::class) constructor(
     val outstandingAmount: Double = 0.0,
 
     // Sync and status
-    @ColumnInfo(name = "docstatus")
+    @ColumnInfo(name = "doc_status")
     val docStatus: Int = 0, // 0 = Draft, 1 = Submitted, 2 = Cancelled
 
-    @ColumnInfo(name = "is_pos")
-    val isPOS: Boolean = true,
-    @ColumnInfo(name = "created_at")
-    val createdAt: Long = Clock.System.now().toEpochMilliseconds()
+    @ColumnInfo(name = "status")
+    val status: String? = null,
 
+    @ColumnInfo(name = "is_pos")
+    val isPOS: Boolean = true
 )

@@ -275,12 +275,14 @@ class APIService(
         }
 
         val priceMap = prices.associate { it.itemCode to it.priceListRate }
+        val priceCurrency = prices.associate { it.itemCode to it.currency }
 
         // Combina todo en WarehouseItemDto
         return bins.map { bin ->
             val item = itemMap[bin.itemCode]
                 ?: throw FrappeException("Item no encontrado: ${bin.itemCode}")
             val price = priceMap[bin.itemCode] ?: item.standardRate
+            val currency = priceCurrency[bin.itemCode] ?: ""
             val barcode = ""  // No en JSON; "" default
             val isStocked = item.isStockItem
             val isService =
@@ -299,7 +301,8 @@ class APIService(
                 isService = isService,
                 isStocked = isStocked,
                 stockUom = item.stockUom,
-                brand = item.brand ?: ""
+                brand = item.brand ?: "",
+                currency = currency
             )
         }
     }
@@ -398,17 +401,28 @@ class APIService(
 
 
     //Para facturas pendientes (lista simple de overdue)
-    suspend fun getPendingInvoices(customer: String): List<PendingInvoiceDto> {
-        val url = authStore.getCurrentSite()
-        return clientOAuth.getERPList(
-            doctype = ERPDocType.SalesInvoice.path,
-            fields = ERPDocType.SalesInvoice.getFields(),
-            baseUrl = url,
-            filters = filters {
-                "customer" eq customer
-                "status" in listOf("Overdue", "Unpaid")
-            }
-        )
+    suspend fun getPendingInvoices(
+        posProfile: String,
+        offset: Int = 0,
+        limit: Int = 20
+    ): List<PendingInvoiceDto> {
+        return try {
+            val url = authStore.getCurrentSite()
+            clientOAuth.getERPList(
+                doctype = ERPDocType.SalesInvoice.path,
+                fields = ERPDocType.SalesInvoice.getFields(),
+                offset = offset,
+                limit = limit,
+                baseUrl = url,
+                filters = filters {
+                    "outstanding_amount" gt 0
+                    "pos_profile" eq posProfile
+                }
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
     }
 }
 

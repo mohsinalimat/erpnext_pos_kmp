@@ -1,6 +1,5 @@
 package com.erpnext.pos.localSource.entities
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -20,4 +19,5 @@ data class ItemEntity(
     var isService: Boolean = false,
     var isStocked: Boolean = false,
     var stockUom: String,
+    var currency: String,
 )

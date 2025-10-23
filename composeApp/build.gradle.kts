@@ -60,7 +60,7 @@ kotlin {
         commonMain.dependencies {
 
             //Test
-            implementation("dev.materii.pullrefresh:pullrefresh:1.0.0")
+            implementation(libs.pullrefresh)
 
             implementation(libs.androidx.paging.common)
             // Si usas UI Compose multiplataforma:
@@ -83,7 +83,7 @@ kotlin {
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.room.paging)
-            implementation("androidx.room:room-ktx:2.7.2")
+            implementation(libs.androidx.room.ktx)
             // implementation(libs.androidx.room.ktx)
             implementation(libs.androidx.sqlite.bundled)
 
@@ -101,10 +101,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.sqldelight.coroutines)
 
-            implementation(libs.coil.compose.core)
-            implementation(libs.coil.compose)
-            implementation(libs.coil.mp)
-            implementation(libs.coil.network.ktor)
+            implementation(libs.bundles.coil)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

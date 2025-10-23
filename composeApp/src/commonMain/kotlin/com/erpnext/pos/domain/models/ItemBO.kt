@@ -6,6 +6,7 @@ data class ItemBO(
     var itemCode: String = "",
     var barcode: String = "",
     var image: String? = "",
+    var currency: String? = "",
     var itemGroup: String = "",
     var brand: String? = null,
     var price: Double = 0.0,
