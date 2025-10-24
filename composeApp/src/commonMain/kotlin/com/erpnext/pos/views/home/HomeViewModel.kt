@@ -79,6 +79,7 @@ class HomeViewModel(
             posProfiles = fetchPosProfileUseCase.invoke(null)
             _stateFlow.update { HomeState.POSProfiles(posProfiles) }
         }, exceptionHandler = { e ->
+            e.printStackTrace()
             _stateFlow.update { HomeState.Error(e.message ?: "Error") }
         })
     }

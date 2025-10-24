@@ -70,10 +70,8 @@ class InventoryViewModel(
                 when (state) {
                     is CashBoxState.Opened -> {
                         initialized = true
-                        if (warehouseId != state.warehouse || priceList != state.priceList) {
+                        if (warehouseId != state.warehouse) {
                             warehouseId = state.warehouse
-                            priceList = state.priceList
-                            // for initial open we want force
                             fetchAllItems(force = true)
                         }
                     }
@@ -100,7 +98,6 @@ class InventoryViewModel(
                 println("InventoryViewModel - initial cashboxState = $current")
                 if (current is CashBoxState.Opened) {
                     warehouseId = current.warehouse
-                    priceList = current.priceList
                     fetchAllItems(force = true)
                 } else {
                     // retry breve: permite que el manager emita si está inicializándose
@@ -108,7 +105,6 @@ class InventoryViewModel(
                     val retry = runCatching { cashboxManager.cashboxState.value }.getOrNull()
                     if (retry is CashBoxState.Opened) {
                         warehouseId = retry.warehouse
-                        priceList = retry.priceList
                         fetchAllItems(force = true)
                     } else {
                         // No hay caja abierta - publíca Empty para UX estable

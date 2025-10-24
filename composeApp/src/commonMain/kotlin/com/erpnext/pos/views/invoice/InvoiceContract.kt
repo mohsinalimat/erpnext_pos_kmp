@@ -13,7 +13,7 @@ sealed class InvoiceState {
 
 data class InvoiceAction(
     val onCustomerSelected: (String) -> Unit = {},
-    val onDateSelected: (String, String) -> Unit = { _, _ -> },
+    val onDateSelected: (String) -> Unit = { _, -> },
     val onRefresh: () -> Unit = {},
     val onPrint: () -> Unit = {},
     val onItemClick: (PendingInvoiceBO) -> Unit = {},

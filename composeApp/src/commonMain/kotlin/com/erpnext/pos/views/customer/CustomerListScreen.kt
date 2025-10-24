@@ -254,7 +254,7 @@ fun SearchTextField(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        placeholder = { Text(placeholderText, style = MaterialTheme.typography.bodyLarge) },
+        placeholder = { Text(placeholderText, style = MaterialTheme.typography.bodyLarge, overflow = TextOverflow.Ellipsis, softWrap = true, maxLines = 1) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Filled.Search,

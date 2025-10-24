@@ -8,8 +8,7 @@ import kotlinx.coroutines.flow.Flow
 data class PendingInvoiceInput(
     val pos: String,
     val query: String? = null,
-    val from: String? = null,
-    val to: String? = null
+    val date: String? = null,
 )
 
 class FetchPendingInvoiceUseCase(

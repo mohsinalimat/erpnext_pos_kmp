@@ -12,7 +12,7 @@ class SalesInvoiceRepository(
     private val source: InvoiceRemoteSource
 ) : ISaleInvoiceRepository {
     override suspend fun getPendingInvoices(info: PendingInvoiceInput): Flow<PagingData<PendingInvoiceBO>> {
-        return source.getAllInvoices(info.pos, info.query, info.from, info.to).toPagingBO()
+        return source.getAllInvoices(info.pos, info.query, info.date).toPagingBO()
     }
 
     override suspend fun getInvoiceDetail(invoiceId: String): PendingInvoiceBO {

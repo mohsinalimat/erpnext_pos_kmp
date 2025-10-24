@@ -35,5 +35,7 @@ data class PendingInvoiceDto(
     @SerialName("docstatus")
     val docStatus: Int,
     @SerialName("status")
-    val status: String
+    val status: String,
+    @SerialName("route")
+    val route: String,
 )

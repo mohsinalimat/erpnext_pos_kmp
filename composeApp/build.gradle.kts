@@ -102,6 +102,8 @@ kotlin {
             implementation(libs.sqldelight.coroutines)
 
             implementation(libs.bundles.coil)
+
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

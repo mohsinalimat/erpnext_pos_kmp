@@ -19,8 +19,7 @@ class InvoiceRemoteSource(
     fun getAllInvoices(
         posProfileName: String,
         query: String? = null,
-        fromDate: String? = null,
-        toDate: String? = null
+        date: String? = null,
     ): Flow<PagingData<SalesInvoiceEntity>> {
         return Pager(
             config = PagingConfig(
@@ -32,7 +31,7 @@ class InvoiceRemoteSource(
             remoteMediator = InvoiceRemoteMediator(apiService, invoiceDao, posProfileName),
             initialKey = null
         ) {
-            invoiceDao.getFilteredInvoices(query, fromDate, toDate)
+            invoiceDao.getFilteredInvoices(query, date)
         }.flow.onStart {
             emit(PagingData.empty())
         }

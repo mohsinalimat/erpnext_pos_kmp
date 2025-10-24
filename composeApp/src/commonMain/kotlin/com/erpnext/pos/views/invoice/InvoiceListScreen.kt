@@ -1,18 +1,27 @@
 package com.erpnext.pos.views.invoice
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.OnlinePrediction
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.erpnext.pos.domain.models.PendingInvoiceBO
+import com.erpnext.pos.views.inventory.components.SearchTextField
+import kotlinx.datetime.*
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun InvoiceListScreen(
     state: InvoiceState,
@@ -25,120 +34,234 @@ fun InvoiceListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Facturación") }
+            CenterAlignedTopAppBar(
+                title = { Text("Facturación", fontWeight = FontWeight.SemiBold) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { padding ->
-        Column(
+
+        Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
         ) {
 
-            // Filtros
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                OutlinedButton(
-                    onClick = { showDatePicker = true },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(selectedDate ?: "Seleccionar fecha")
-                }
 
-                OutlinedTextField(
-                    value = clientName,
-                    onValueChange = {
-                        clientName = it
-                        action.onCustomerSelected(it)
-                    },
-                    placeholder = { Text("Nombre de Cliente") },
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            when (state) {
-                is InvoiceState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
-
-                is InvoiceState.Error -> {
-                    Text(
-                        state.error,
-                        color = MaterialTheme.colorScheme.error
+                /** 🔍 Barra de Filtros **/
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
                     )
-                }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SearchTextField(clientName, {
+                            clientName = it
+                            action.onCustomerSelected(it)
+                        })
+                        /*OutlinedTextField(
+                            value = clientName,
+                            onValueChange = {
+                                clientName = it
+                                action.onCustomerSelected(it)
+                            },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            placeholder = { Text("Buscar cliente") },
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = null)
+                            },
+                            shape = MaterialTheme.shapes.large
+                        )*/
 
-                is InvoiceState.Empty -> {
-                    Text("No hay facturas", style = MaterialTheme.typography.bodyMedium)
-                }
-
-                is InvoiceState.Success -> {
-                    val invoices = state.invoices.collectAsLazyPagingItems()
-
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(invoices.itemCount) { index ->
-                            val invoice = invoices[index] ?: return@items
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column {
-                                    Text(
-                                        invoice.invoiceId,
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                    Text(
-                                        "Cliente: ${invoice.customer}",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                    Text(
-                                        "Estado: ${invoice.status}",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                    Text(
-                                        "Fecha: ${invoice.postingDate}",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                                Text(
-                                    "C$ ${invoice.total}",
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                            Divider()
+                        OutlinedButton(
+                            onClick = { showDatePicker = true },
+                            shape = MaterialTheme.shapes.large
+                        ) {
+                            Icon(Icons.Default.CalendarMonth, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text(selectedDate ?: "Fecha")
                         }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                /** 💼 Contenido **/
+                when (state) {
+                    is InvoiceState.Loading -> LoadingState()
+                    is InvoiceState.Error -> ErrorState(state.error)
+                    is InvoiceState.Empty -> EmptyState()
+                    is InvoiceState.Success -> {
+                        val invoices = state.invoices.collectAsLazyPagingItems()
+
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(invoices.itemCount) { index ->
+                                val invoice = invoices[index] ?: return@items
+                                InvoiceCard(invoice = invoice)
+                            }
+                        }
+                    }
+                }
+
+                /** 🗓️ Date Picker **/
+                if (showDatePicker) {
+                    DatePickerDialog(
+                        onDismissRequest = { showDatePicker = false },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    val millis = datePickerState.selectedDateMillis
+                                    millis?.let {
+                                        val instant = Instant.fromEpochMilliseconds(it)
+                                        val localDateTime =
+                                            instant.toLocalDateTime(TimeZone.currentSystemDefault())
+                                        val formatted = buildString {
+                                            append(localDateTime.year.toString().padStart(2, '0'))
+                                            append("/")
+                                            append(localDateTime.month.toString().padStart(2, '0'))
+                                            append("/")
+                                            append(localDateTime.day)
+                                        }
+                                        selectedDate = formatted
+                                        action.onDateSelected(formatted)
+                                    }
+                                    showDatePicker = false
+                                }
+                            ) { Text("Aceptar") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                        }
+                    ) {
+                        DatePicker(state = datePickerState)
+                    }
+                }
             }
 
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                showDatePicker = true
-                                //action.updateDateFilter(datePickerState.selectableDates.)
-                                showDatePicker = false
-                            }
-                        ) { Text("Aceptar") }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
-                    }
+            /** 🔄 Overlay de Carga **/
+            if (state is InvoiceState.Loading) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                 ) {
-                    DatePicker(state = datePickerState)
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 4.dp
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+/** 💳 Tarjeta estilizada para cada factura **/
+@Composable
+fun InvoiceCard(invoice: PendingInvoiceBO) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(2.dp, MaterialTheme.shapes.medium),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Factura #${invoice.invoiceId}",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                )
+                Text(
+                    text = "Cliente: ${invoice.customer}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Estado: ${invoice.status}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Fecha: ${invoice.postingDate}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Text(
+                text = "C$ ${invoice.total}",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+/** 🌐 Estados de interfaz elegantes **/
+
+@Composable
+private fun LoadingState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ErrorState(message: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("No hay facturas disponibles", style = MaterialTheme.typography.bodyMedium)
+    }
+}

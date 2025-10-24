@@ -22,7 +22,7 @@ sealed interface CashBoxState {
     data class Opened(
         val posProfileName: String,
         val warehouse: String? = null,
-        val priceList: String? = null
+        val territory: String? = null
     ) : CashBoxState
 }
 
@@ -104,7 +104,7 @@ class CashBoxManager(
                             CashBoxState.Opened(
                                 profile.profileName,
                                 profile.warehouse,
-                                profile.priceList
+                                profile.route
                             )
                         }
                         true

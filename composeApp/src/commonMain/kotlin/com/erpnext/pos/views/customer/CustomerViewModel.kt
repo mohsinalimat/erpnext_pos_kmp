@@ -3,6 +3,7 @@ package com.erpnext.pos.views.customer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
 import com.erpnext.pos.base.BaseViewModel
 import com.erpnext.pos.domain.usecases.CheckCustomerCreditUseCase
 import com.erpnext.pos.domain.usecases.CustomerCreditInput
@@ -11,11 +12,15 @@ import com.erpnext.pos.domain.usecases.CustomerSearchUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomerDetailUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomersUseCase
 import com.erpnext.pos.navigation.NavigationManager
+import com.erpnext.pos.views.CashBoxManager
+import com.erpnext.pos.views.CashBoxState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class CustomerViewModel(
     private val navManager: NavigationManager,
+    private val cashboxManager: CashBoxManager,
     private val fetchCustomersUseCase: FetchCustomersUseCase,
     private val checkCustomerCreditUseCase: CheckCustomerCreditUseCase,
     private val searchUseCase: CustomerSearchUseCase,
@@ -25,12 +30,24 @@ class CustomerViewModel(
         MutableStateFlow(CustomerState.Loading)
     val stateFlow = _stateFlow
 
-    private var territory by mutableStateOf("Ruta Ciudad Sandino")
+    private var territory by mutableStateOf("")
     private var searchFilter by mutableStateOf("")
     private var selectedTerritory by mutableStateOf<String?>(null)
 
     init {
-        fetchAllCustomers(territory)
+        viewModelScope.launch {
+            cashboxManager.observeCashBoxState().collectLatest { state ->
+                when (state) {
+                    is CashBoxState.Opened -> {
+                        territory = state.posProfileName
+
+                        fetchAllCustomers(territory)
+                    }
+
+                    else -> null
+                }
+            }
+        }
     }
 
     fun fetchAllCustomers(territory: String) {

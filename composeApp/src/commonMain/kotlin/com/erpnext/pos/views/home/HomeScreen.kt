@@ -40,18 +40,20 @@ fun HomeScreen(
     var isOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        //actions.loadPOSProfile()
-        //actions.loadUserInfo()
         isOpen = actions.isCashboxOpen()
     }
 
     LaunchedEffect(uiState) {
-        if (uiState is HomeState.POSProfiles && currentProfiles.isEmpty()) {
-            currentProfiles = uiState.posProfiles
-        }
+        when (uiState) {
+            is HomeState.POSProfiles -> {
+                currentProfiles = uiState.posProfiles
+            }
 
-        if (uiState is HomeState.CashboxState) {
-            isOpen = uiState.isOpen
+            is HomeState.CashboxState -> {
+                isOpen = uiState.isOpen
+            }
+
+            else -> null
         }
     }
 
@@ -169,10 +171,12 @@ fun HomeScreen(
                                 }
                             }
                         },
+                        //enabled = uiState is HomeState.POSInfoLoading || uiState is HomeState.LoadingProfiles || uiState is HomeState.Loading,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (!isOpen) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.error,
+                            disabledContainerColor = MaterialTheme.colorScheme.scrim
                         )
                     ) {
                         Text(
@@ -209,6 +213,7 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun POSProfileDialog(
     uiState: HomeState,
@@ -217,8 +222,17 @@ fun POSProfileDialog(
     onOpenCashbox: (POSProfileBO, List<PaymentModeWithAmount>) -> Unit,
     onDismiss: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
     var selectedProfile by remember { mutableStateOf<POSProfileBO?>(null) }
     var paymentAmounts by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    LaunchedEffect(profiles) {
+        if (profiles.size == 1) {
+            selectedProfile = profiles.first()
+            onSelectProfile(profiles.first())
+            expanded = false
+        }
+    }
 
     AlertDialog(onDismissRequest = onDismiss, title = {
         Text(
@@ -231,9 +245,8 @@ fun POSProfileDialog(
             color = MaterialTheme.colorScheme.primary
         )
     }, text = {
-        // Paso 1 → mostrar perfiles
         Column {
-            LazyColumn {
+            /*LazyColumn {
                 items(profiles) { profile ->
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable {
@@ -252,6 +265,56 @@ fun POSProfileDialog(
                                 profile.company, style = MaterialTheme.typography.bodyMedium
                             )
                         }
+                    }
+                }
+            }*/
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                OutlinedTextField(
+                    readOnly = true,
+                    value = selectedProfile?.name ?: "Seleccionar POS",
+                    onValueChange = {},
+                    label = { Text("Perfil POS") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(),
+                    colors = ExposedDropdownMenuDefaults.textFieldColors()
+                )
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .exposedDropdownSize() // adapta el ancho automáticamente
+                        .heightIn(max = 250.dp)
+                ) {
+                    profiles.forEach { profile ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(profile.name, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        profile.company,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            onClick = {
+                                selectedProfile = profile
+                                onSelectProfile(profile)
+                                expanded = false
+                            },
+                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                        )
                     }
                 }
             }

@@ -2,16 +2,23 @@ package com.erpnext.pos.views.invoice
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.erpnext.pos.domain.models.PendingInvoiceBO
 import org.koin.compose.viewmodel.koinViewModel
 
 class InvoiceCoordinator(
-    viewModel: InvoiceViewModel
+    private val viewModel: InvoiceViewModel
 ) {
     val screenStateFlow = viewModel.stateFlow
-    
-    fun onCustomerSelected(customerId: String) {}
-    fun onDateSelected(start: String, end: String) {}
+
+    fun onCustomerSelected(customerId: String) {
+        viewModel.onSearchQueryChanged(customerId)
+    }
+
+    fun onDateSelected(date: String) {
+        viewModel.onDateSelected(date)
+    }
+
     fun onRefresh() {}
     fun onPrint() {}
     fun onItemClick(item: PendingInvoiceBO) {}

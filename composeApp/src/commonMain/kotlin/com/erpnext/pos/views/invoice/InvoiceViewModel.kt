@@ -42,18 +42,17 @@ class InvoiceViewModel(
     private var itemsGlobal: Flow<PagingData<PendingInvoiceBO>>? = null
 
     private val searchFilter = MutableStateFlow("")
-    private val fromDateFilter = MutableStateFlow<String?>(null)
-    private val toDateFilter = MutableStateFlow<String?>(null)
+    private val dateFilter = MutableStateFlow<String?>(null)
 
     private var fetchJob: Job? = null
 
     init {
         viewModelScope.launch {
-            combine(searchFilter, fromDateFilter, toDateFilter) { q, from, to ->
-                Triple(q, from, to)
-            }.debounce(300).collectLatest { (q, from, to) ->
-                applyLocalFilter(q, from, to)
-            }
+            combine(searchFilter, dateFilter) { q, d -> q to d }
+                .debounce(300)
+                .collectLatest { (q, d) ->
+                    applyLocalFilter(q, d)
+                }
         }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -154,10 +153,18 @@ class InvoiceViewModel(
         }, finallyHandler = { })
     }
 
-    private fun applyLocalFilter(query: String, fromDate: String?, toDate: String?) {
+    fun onSearchQueryChanged(value: String) {
+        searchFilter.value = value
+    }
+
+    fun onDateSelected(value: String) {
+        dateFilter.value = value
+    }
+
+    private fun applyLocalFilter(query: String, date: String?) {
         fetchJob?.cancel()
         fetchJob = executeUseCase(action = {
-            val input = PendingInvoiceInput(posProfileName, query, fromDate, toDate)
+            val input = PendingInvoiceInput(posProfileName, query, date)
             fetchPendingInvoiceUseCase.invoke(input).collectLatest { pagingData ->
                 _stateFlow.value = InvoiceState.Success(flowOf(pagingData))
             }

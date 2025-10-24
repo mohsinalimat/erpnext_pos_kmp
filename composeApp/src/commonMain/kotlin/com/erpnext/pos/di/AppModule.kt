@@ -122,7 +122,7 @@ val appModule = module {
     single { CustomerRemoteSource(get(), get()) }
     single { CustomerLocalSource(get()) }
     single<ICustomerRepository> { CustomerRepository(get(), get()) }
-    single { CustomerViewModel(get(), get(), get(), get(), get()) }
+    single { CustomerViewModel(get(), get(), get(), get(), get(), get()) }
     //endregion
 
     //region Home

@@ -201,14 +201,19 @@ class APIService(
 
     suspend fun getPOSProfiles(): List<POSProfileSimpleDto> {
         val url = authStore.getCurrentSite()
-        return clientOAuth.getERPList(
-            doctype = ERPDocType.POSProfile.path,
-            fields = ERPDocType.POSProfile.getFields(),
-            baseUrl = url,
-            filters = filters {
-                Filter("disabled", Operator.EQ, false)
-            }
-        )
+        return try {
+            clientOAuth.getERPList(
+                doctype = ERPDocType.POSProfile.path,
+                fields = ERPDocType.POSProfile.getFields(),
+                baseUrl = url,
+                filters = filters {
+                    Filter("disabled", Operator.EQ, false)
+                }
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
     }
 
     //TODO: Cuando tenga el API lo cambiamos

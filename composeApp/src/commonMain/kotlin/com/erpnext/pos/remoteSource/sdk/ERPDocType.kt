@@ -99,6 +99,7 @@ val fields: List<DocTypeFields> = listOf(
             "is_pos",
             "pos_profile",
             "docstatus",
+            "route",
             "contact_display",
             "contact_mobile",
             "party_account_currency",
