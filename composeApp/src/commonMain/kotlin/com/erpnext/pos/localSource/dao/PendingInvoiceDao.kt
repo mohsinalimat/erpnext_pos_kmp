@@ -33,7 +33,7 @@ interface PendingInvoiceDao {
         startDate: String, endDate: String, today: String
     ): PagingSource<Int, SalesInvoiceEntity>
 
-    @Query("SELECT * FROM tabSalesInvoice WHERE (:query IS NULL OR customer_name LIKE '%' || :query || '%' OR invoice_id LIKE '%' || :query || '%') AND ((:date IS NULL OR posting_date >= :date)) ORDER BY posting_date DESC")
+    @Query("SELECT * FROM tabSalesInvoice WHERE (:query IS NULL OR customer_name LIKE '%' || :query || '%' OR invoice_id LIKE '%' || :query || '%') AND ((:date IS NULL OR posting_date == :date)) ORDER BY posting_date DESC")
     fun getFilteredInvoices(
         query: String?,
         date: String?,

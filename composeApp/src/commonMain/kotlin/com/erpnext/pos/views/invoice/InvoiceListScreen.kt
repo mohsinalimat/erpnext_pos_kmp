@@ -72,32 +72,30 @@ fun InvoiceListScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        SearchTextField(clientName, {
-                            clientName = it
-                            action.onCustomerSelected(it)
-                        })
-                        /*OutlinedTextField(
-                            value = clientName,
-                            onValueChange = {
-                                clientName = it
-                                action.onCustomerSelected(it)
-                            },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                            placeholder = { Text("Buscar cliente") },
-                            leadingIcon = {
-                                Icon(Icons.Default.Search, contentDescription = null)
-                            },
-                            shape = MaterialTheme.shapes.large
-                        )*/
+                        Column {
+                            OutlinedTextField(
+                                value = clientName,
+                                onValueChange = {
+                                    clientName = it
+                                    action.onCustomerSelected(it)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                placeholder = { Text("Buscar cliente") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Search, contentDescription = null)
+                                },
+                                shape = MaterialTheme.shapes.large
+                            )
 
-                        OutlinedButton(
-                            onClick = { showDatePicker = true },
-                            shape = MaterialTheme.shapes.large
-                        ) {
-                            Icon(Icons.Default.CalendarMonth, contentDescription = null)
-                            Spacer(Modifier.width(6.dp))
-                            Text(selectedDate ?: "Fecha")
+                            OutlinedButton(
+                                onClick = { showDatePicker = true },
+                                shape = MaterialTheme.shapes.large
+                            ) {
+                                Icon(Icons.Default.CalendarMonth, contentDescription = null)
+                                Spacer(Modifier.width(6.dp))
+                                Text(selectedDate ?: "Fecha")
+                            }
                         }
                     }
                 }
@@ -137,11 +135,16 @@ fun InvoiceListScreen(
                                         val localDateTime =
                                             instant.toLocalDateTime(TimeZone.currentSystemDefault())
                                         val formatted = buildString {
-                                            append(localDateTime.year.toString().padStart(2, '0'))
-                                            append("/")
-                                            append(localDateTime.month.toString().padStart(2, '0'))
-                                            append("/")
-                                            append(localDateTime.day)
+                                            append(localDateTime.year)
+                                            append("-")
+                                            append(
+                                                localDateTime.monthNumber.toString()
+                                                    .padStart(2, '0')
+                                            )
+                                            append("-")
+                                            append(
+                                                (localDateTime.day + 1).toString().padStart(2, '0')
+                                            )
                                         }
                                         selectedDate = formatted
                                         action.onDateSelected(formatted)
