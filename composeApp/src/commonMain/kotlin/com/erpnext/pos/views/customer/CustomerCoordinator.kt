@@ -9,7 +9,7 @@ class CustomerCoordinator(
 ) {
     val screenStateFlow = viewModel.stateFlow
 
-    fun fetchAll() = viewModel.fetchAllCustomers()
+    fun fetchAll() = viewModel.fetchAllCustomers("Ruta Ciudad Sandino")
 
     fun toDetails(customerId: String) = viewModel.toDetails(customerId)
 

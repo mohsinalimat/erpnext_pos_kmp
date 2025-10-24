@@ -153,6 +153,7 @@ fun POSProfileDto.toBO(): POSProfileBO {
         disabled = this.disabled,
         company = this.company,
         currency = this.currency,
+        route = this.route,
         paymentModes = this.payments.toBO(),
     )
 }

@@ -25,17 +25,18 @@ class CustomerViewModel(
         MutableStateFlow(CustomerState.Loading)
     val stateFlow = _stateFlow
 
+    private var territory by mutableStateOf("Ruta Ciudad Sandino")
     private var searchFilter by mutableStateOf("")
     private var selectedTerritory by mutableStateOf<String?>(null)
 
     init {
-        fetchAllCustomers()
+        fetchAllCustomers(territory)
     }
 
-    fun fetchAllCustomers() {
+    fun fetchAllCustomers(territory: String) {
         executeUseCase(
             action = {
-                fetchCustomersUseCase.invoke(null)
+                fetchCustomersUseCase.invoke(territory)
                 // Llama searchUseCase para todos (sin filtro) y actualiza estado
                 searchUseCase.invoke(CustomerSearchInput("", null)).collectLatest { customers ->
                     val territories = customers.map { it.territory }.distinct()
@@ -97,6 +98,6 @@ class CustomerViewModel(
     fun onClearSearch() {}
 
     fun onRefresh() {
-        fetchAllCustomers()
+        fetchAllCustomers(territory)
     }
 }

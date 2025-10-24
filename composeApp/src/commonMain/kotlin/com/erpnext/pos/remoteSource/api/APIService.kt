@@ -370,7 +370,7 @@ class APIService(
         )
     }
 
-    suspend fun getCustomers(): List<CustomerDto> {
+    suspend fun getCustomers(territory: String): List<CustomerDto> {
         val url = authStore.getCurrentSite()
         return clientOAuth.getERPList(
             ERPDocType.Customer.path,
@@ -379,6 +379,7 @@ class APIService(
             orderBy = "customer_name asc",
             filters = filters {
                 "disabled" eq false
+                "territory" eq territory
             }
         )
     }

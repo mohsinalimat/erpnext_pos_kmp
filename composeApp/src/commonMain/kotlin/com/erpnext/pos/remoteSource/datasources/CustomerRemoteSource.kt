@@ -9,8 +9,8 @@ class CustomerRemoteSource(
     private val api: APIService,
     private val customerDao: CustomerDao
 ) {
-    suspend fun fetchAndCacheCustomers() {
-        val customers = api.getCustomers()
+    suspend fun fetchAndCacheCustomers(territory: String) {
+        val customers = api.getCustomers(territory)
         val entities = customers.map { dto ->
             val outstanding = api.getCustomerOutstanding(dto.name)
             val creditLimit = dto.creditLimit

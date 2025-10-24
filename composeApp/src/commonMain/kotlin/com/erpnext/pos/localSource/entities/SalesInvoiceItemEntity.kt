@@ -33,7 +33,7 @@ data class SalesInvoiceEntity(
     val dueDate: String? = null,
 
     @ColumnInfo(name = "currency")
-    val currency: String = "USD",
+    val currency: String? = "NIO",
 
     @ColumnInfo(name = "net_total")
     val netTotal: Double = 0.0,
@@ -55,5 +55,5 @@ data class SalesInvoiceEntity(
     val status: String? = null,
 
     @ColumnInfo(name = "is_pos")
-    val isPOS: Boolean = true
+    val isPOS: Boolean = false
 )

@@ -42,5 +42,8 @@ data class POSProfileEntity(
     val active: Boolean? = false,
 
     @ColumnInfo(name = "user")
-    val user: String
+    val user: String,
+
+    @ColumnInfo(name = "route")
+    val route: String
 )

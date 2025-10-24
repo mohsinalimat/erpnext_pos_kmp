@@ -12,7 +12,7 @@ data class PendingInvoiceDto(
     @SerialName("customer_name")
     val customerName: String,
     @SerialName("contact_mobile")
-    val customerPhone: String,
+    val customerPhone: String?,
     @SerialName("posting_date")
     val postingDate: String,
     @SerialName("due_date")
@@ -26,9 +26,9 @@ data class PendingInvoiceDto(
     @SerialName("outstanding_amount")
     val outstandingAmount: Double,
     @SerialName("pos_profile")
-    val posProfile: String,
+    val posProfile: String?,
     @SerialName("party_account_currency")
-    val currency: String,
+    val currency: String?,
     @SerialName("is_pos")
     @Serializable(IntAsBooleanSerializer::class)
     val isPos: Boolean,

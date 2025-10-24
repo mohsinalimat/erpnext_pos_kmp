@@ -11,8 +11,8 @@ data class PendingInvoiceBO(
     val netTotal: Double,
     val total: Double,
     val paidAmount: Double,
-    val isPos: Boolean,
+    val isPos: Boolean? = false,
     val docStatus: Int,
-    val currency: String,
+    val currency: String?,
     val status: String? = "Borrador"
 )

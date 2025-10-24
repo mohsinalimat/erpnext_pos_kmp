@@ -173,7 +173,7 @@ private fun CustomerFilters(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        if (territories.isNullOrEmpty()) {
+        if (!territories.isEmpty()) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()

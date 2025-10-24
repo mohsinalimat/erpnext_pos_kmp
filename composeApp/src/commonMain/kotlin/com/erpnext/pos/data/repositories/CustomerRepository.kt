@@ -12,8 +12,8 @@ class CustomerRepository(
     private val remoteSource: CustomerRemoteSource,
     private val localSource: CustomerLocalSource
 ) : ICustomerRepository {
-    override suspend fun getCustomers() {
-        remoteSource.fetchAndCacheCustomers()
+    override suspend fun getCustomers(territory: String) {
+        remoteSource.fetchAndCacheCustomers(territory)
     }
 
     override suspend fun getCustomersFiltered(

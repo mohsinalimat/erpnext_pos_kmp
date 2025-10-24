@@ -40,7 +40,7 @@ val fields: List<DocTypeFields> = listOf(
     ),
     DocTypeFields(
         ERPDocType.POSProfile, listOf(
-            "name", "company",
+            "name", "company", "route",
             "customer", "disabled", "currency", "warehouse", "country"
         )
     ),
