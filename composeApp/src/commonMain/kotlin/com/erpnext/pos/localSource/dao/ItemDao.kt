@@ -15,12 +15,15 @@ interface ItemDao {
     @Query("SELECT * FROM tabItem ORDER BY name ASC")
     fun getAllItems(): PagingSource<Int, ItemEntity>
 
-    @Query("SELECT * FROM tabItem WHERE name = :itemId")
-    fun getCategory(itemId: String): ItemEntity
+    @Query("SELECT * FROM TABITEM WHERE name == :id")
+    fun getItemById(id: String): PagingSource<Int, ItemEntity>
+
+    @Query("SELECT * FROM tabitem WHERE name LIKE '%' || :search || '%' OR description LIKE '%' || :search || '%' OR brand LIKE '%' || :search || '%' OR itemGroup LIKE '%' || :search || '%' ORDER BY name ASC")
+    fun getAllFiltered(search: String): PagingSource<Int, ItemEntity>
 
     @Query("SELECT COUNT(*) FROM tabItem")
-    suspend fun countAll(): Int
+    fun countAll(): Int
 
     @Query("DELETE FROM tabItem")
-    suspend fun deleteAll()
+    fun deleteAll()
 }

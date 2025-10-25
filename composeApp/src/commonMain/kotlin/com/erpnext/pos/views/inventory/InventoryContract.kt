@@ -9,7 +9,11 @@ import kotlinx.coroutines.flow.Flow
 sealed class InventoryState {
     object Loading : InventoryState()
     object Empty : InventoryState()
-    data class Success(val items: Flow<PagingData<ItemBO>>, val categories: List<CategoryBO>) : InventoryState()
+    data class Success(
+        val items: Flow<PagingData<ItemBO>>,
+        val categories: List<CategoryBO>? = emptyList()
+    ) : InventoryState()
+
     data class Error(val message: String) : InventoryState()
 }
 

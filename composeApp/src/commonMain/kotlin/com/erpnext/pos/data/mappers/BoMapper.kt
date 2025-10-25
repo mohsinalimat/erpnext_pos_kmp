@@ -8,6 +8,7 @@ import com.erpnext.pos.domain.models.POSProfileBO
 import com.erpnext.pos.domain.models.PaymentModesBO
 import com.erpnext.pos.domain.models.PendingInvoiceBO
 import com.erpnext.pos.domain.models.UserBO
+import com.erpnext.pos.localSource.entities.CategoryEntity
 import com.erpnext.pos.localSource.entities.ItemEntity
 import com.erpnext.pos.localSource.entities.SalesInvoiceEntity
 import com.erpnext.pos.remoteSource.dto.CategoryDto
@@ -74,6 +75,12 @@ fun UserDto.toBO(): UserBO {
         email = this.email,
         language = this.language,
         enabled = this.enabled
+    )
+}
+
+fun CategoryEntity.toBO(): CategoryBO {
+    return CategoryBO(
+        name = this.name
     )
 }
 

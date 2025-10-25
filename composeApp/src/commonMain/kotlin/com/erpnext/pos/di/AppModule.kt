@@ -14,7 +14,6 @@ import com.erpnext.pos.domain.repositories.IPOSRepository
 import com.erpnext.pos.domain.repositories.ISaleInvoiceRepository
 import com.erpnext.pos.domain.repositories.IUserRepository
 import com.erpnext.pos.domain.usecases.CheckCustomerCreditUseCase
-import com.erpnext.pos.domain.usecases.CustomerSearchUseCase
 import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomerDetailUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomersUseCase
@@ -24,6 +23,7 @@ import com.erpnext.pos.domain.usecases.FetchPosProfileInfoUseCase
 import com.erpnext.pos.domain.usecases.FetchPosProfileUseCase
 import com.erpnext.pos.domain.usecases.FetchUserInfoUseCase
 import com.erpnext.pos.localSource.datasources.CustomerLocalSource
+import com.erpnext.pos.localSource.datasources.InventoryLocalSource
 import com.erpnext.pos.navigation.NavigationManager
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
@@ -33,6 +33,7 @@ import com.erpnext.pos.remoteSource.datasources.InvoiceRemoteSource
 import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
 import com.erpnext.pos.views.CashBoxManager
+import com.erpnext.pos.views.checkout.CheckoutViewModel
 import com.erpnext.pos.views.customer.CustomerViewModel
 import com.erpnext.pos.views.home.HomeViewModel
 import com.erpnext.pos.views.home.POSProfileViewModel
@@ -106,9 +107,10 @@ val appModule = module {
     single { SplashViewModel(get(), get()) }
     //endregion
 
-    //region Inventory DI
+    //region Inventory
     single { InventoryRemoteSource(get(), get()) }
-    single<IInventoryRepository> { InventoryRepository(get()) }
+    single { InventoryLocalSource(get(), get()) }
+    single<IInventoryRepository> { InventoryRepository(get(), get()) }
     single { InventoryViewModel(get(), get(), get(), get(), get()) }
     //endregion
 
@@ -122,7 +124,7 @@ val appModule = module {
     single { CustomerRemoteSource(get(), get()) }
     single { CustomerLocalSource(get()) }
     single<ICustomerRepository> { CustomerRepository(get(), get()) }
-    single { CustomerViewModel(get(), get(), get(), get(), get(), get()) }
+    single { CustomerViewModel(get(), get(), get(), get(), get()) }
     //endregion
 
     //region Home
@@ -137,10 +139,16 @@ val appModule = module {
     single<ISaleInvoiceRepository> { SalesInvoiceRepository(get()) }
     //endregion
 
+    //region Checkout
+    single { CheckoutViewModel(get(), get(), get()) }
+    /*single { CheckoutRemoteSource(get(), get()) }
+    single { CheckoutLocalSource(get()) }
+    single<ICheckoutRepository> { CheckoutRepository(get()) }*/
+    //endregion
+
     //region UseCases DI
     single { CheckCustomerCreditUseCase(get()) }
     single { FetchPendingInvoiceUseCase(get()) }
-    single { CustomerSearchUseCase(get()) }
     single { FetchCustomersUseCase(get()) }
     single { FetchCustomerDetailUseCase(get()) }
     single { FetchInventoryItemUseCase(get()) }

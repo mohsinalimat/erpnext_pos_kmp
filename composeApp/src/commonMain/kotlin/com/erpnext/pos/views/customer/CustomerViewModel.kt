@@ -7,8 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.erpnext.pos.base.BaseViewModel
 import com.erpnext.pos.domain.usecases.CheckCustomerCreditUseCase
 import com.erpnext.pos.domain.usecases.CustomerCreditInput
-import com.erpnext.pos.domain.usecases.CustomerSearchInput
-import com.erpnext.pos.domain.usecases.CustomerSearchUseCase
+import com.erpnext.pos.domain.usecases.CustomerFilterInput
 import com.erpnext.pos.domain.usecases.FetchCustomerDetailUseCase
 import com.erpnext.pos.domain.usecases.FetchCustomersUseCase
 import com.erpnext.pos.navigation.NavigationManager
@@ -23,15 +22,14 @@ class CustomerViewModel(
     private val cashboxManager: CashBoxManager,
     private val fetchCustomersUseCase: FetchCustomersUseCase,
     private val checkCustomerCreditUseCase: CheckCustomerCreditUseCase,
-    private val searchUseCase: CustomerSearchUseCase,
     private val fetchCustomerDetailUseCase: FetchCustomerDetailUseCase
 ) : BaseViewModel() {
     private val _stateFlow: MutableStateFlow<CustomerState> =
         MutableStateFlow(CustomerState.Loading)
     val stateFlow = _stateFlow
 
-    private var territory by mutableStateOf("")
-    private var searchFilter by mutableStateOf("")
+    private var territory by mutableStateOf<String?>(null)
+    private var searchFilter by mutableStateOf<String?>(null)
     private var selectedTerritory by mutableStateOf<String?>(null)
 
     init {
@@ -39,9 +37,8 @@ class CustomerViewModel(
             cashboxManager.observeCashBoxState().collectLatest { state ->
                 when (state) {
                     is CashBoxState.Opened -> {
-                        territory = state.posProfileName
-
-                        fetchAllCustomers(territory)
+                        territory = state.territory
+                        fetchAllCustomers(searchFilter, territory)
                     }
 
                     else -> null
@@ -50,12 +47,11 @@ class CustomerViewModel(
         }
     }
 
-    fun fetchAllCustomers(territory: String) {
+    fun fetchAllCustomers(query: String? = null, territory: String? = null) {
         executeUseCase(
             action = {
-                fetchCustomersUseCase.invoke(territory)
-                // Llama searchUseCase para todos (sin filtro) y actualiza estado
-                searchUseCase.invoke(CustomerSearchInput("", null)).collectLatest { customers ->
+                val input = CustomerFilterInput(query, territory)
+                fetchCustomersUseCase.invoke(input).collectLatest { customers ->
                     val territories = customers.map { it.territory }.distinct()
                     _stateFlow.value = CustomerState.Success(customers, territories)
                 }
@@ -64,7 +60,7 @@ class CustomerViewModel(
         )
     }
 
-    fun onSearchQueryChanged(query: String) {
+    fun onSearchQueryChanged(query: String?) {
         searchFilter = query
         updateFilteredCustomers()
     }
@@ -77,11 +73,10 @@ class CustomerViewModel(
     private fun updateFilteredCustomers() {
         executeUseCase(
             action = {
-                // Llama searchUseCase con filtros actuales
-                searchUseCase.invoke(CustomerSearchInput(searchFilter, selectedTerritory))
-                    .collectLatest { customers ->
-                        _stateFlow.value = CustomerState.Success(customers)
-                    }
+                val searchFilterInput = CustomerFilterInput(searchFilter, selectedTerritory)
+                fetchCustomersUseCase.invoke(searchFilterInput).collectLatest { customers ->
+                    _stateFlow.value = CustomerState.Success(customers)
+                }
             },
             exceptionHandler = { _stateFlow.value = CustomerState.Error(it.message ?: "Error") }
         )
@@ -115,6 +110,6 @@ class CustomerViewModel(
     fun onClearSearch() {}
 
     fun onRefresh() {
-        fetchAllCustomers(territory)
+        fetchAllCustomers(searchFilter, territory)
     }
 }

@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.erpnext.pos.navigation.NavRoute
+import com.erpnext.pos.views.checkout.CheckoutRoute
 import com.erpnext.pos.views.invoice.InvoiceListScreen
 import com.erpnext.pos.views.customer.CustomerRoute
 import com.erpnext.pos.views.home.HomeRoute
@@ -37,7 +38,7 @@ object NavGraph {
                 InventoryRoute()
             }
             composable(NavRoute.Sale.path) {
-                CheckoutScreen(onNavigate = { navController.navigate(NavRoute.Customer.path) })
+                CheckoutRoute()
             }
             composable(NavRoute.Customer.path) {
                 CustomerRoute()

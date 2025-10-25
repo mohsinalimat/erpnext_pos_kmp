@@ -234,7 +234,7 @@ class APIService(
         warehouse: String?,
         priceList: String? = "Standard Selling",
         offset: Int = 0,
-        limit: Int = 20
+        limit: Int = 20,
     ): List<WarehouseItemDto> {
         val url = authStore.getCurrentSite() ?: throw Exception("URL Invalida")
         require(!warehouse.isNullOrEmpty()) { "Bodega es requerida para la carga de productos" }

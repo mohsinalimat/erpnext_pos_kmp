@@ -22,14 +22,14 @@ import androidx.compose.ui.unit.dp
 fun InventoryFilters(
     searchQuery: String,
     selectedCategory: String,
-    categories: List<String>,
+    categories: List<String>?,
     onQueryChange: (String) -> Unit,
     onSearchQueryChanged: (String) -> (() -> Unit),
     onCategoryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        if (categories.isNotEmpty()) {
+        if (categories != null && categories.isNotEmpty()) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp)

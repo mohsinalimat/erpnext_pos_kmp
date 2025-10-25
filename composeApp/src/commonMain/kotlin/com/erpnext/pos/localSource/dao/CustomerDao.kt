@@ -12,12 +12,25 @@ interface CustomerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(customers: List<CustomerEntity>)
 
+    @Query("SELECT * FROM customers ORDER BY customerName ASC")
+    fun getAll(): Flow<List<CustomerEntity>>
+
     @Query("SELECT * FROM customers WHERE customerName LIKE '%' || :search || '%' ORDER BY customerName ASC")
     fun getAllFiltered(search: String): Flow<List<CustomerEntity>>
 
-    @Query("SELECT * FROM customers WHERE territory = :territory AND customerName LIKE '%' || :search || '%' ORDER BY customerName ASC")
-    fun getByTerritory(territory: String, search: String): Flow<List<CustomerEntity>>
+    @Query(
+        """
+    SELECT * FROM customers
+    WHERE territory = :territory
+    AND (:search IS NULL OR customerName LIKE '%' || :search || '%')
+    ORDER BY customerName ASC
+    """
+    )
+    fun getByTerritory(territory: String, search: String? = null): Flow<List<CustomerEntity>>
 
     @Query("SELECT * FROM customers WHERE customerName = :name")
     suspend fun getByName(name: String): CustomerEntity?
+
+    @Query("SELECT COUNT(*) FROM customers")
+    suspend fun count(): Int
 }

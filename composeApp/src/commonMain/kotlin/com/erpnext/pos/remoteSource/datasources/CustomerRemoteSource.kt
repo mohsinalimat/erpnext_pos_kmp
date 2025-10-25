@@ -9,6 +9,7 @@ class CustomerRemoteSource(
     private val api: APIService,
     private val customerDao: CustomerDao
 ) {
+    //TODO: Tenemos pendiente la direccion y contacto del cliente
     suspend fun fetchAndCacheCustomers(territory: String) {
         val customers = api.getCustomers(territory)
         val entities = customers.map { dto ->

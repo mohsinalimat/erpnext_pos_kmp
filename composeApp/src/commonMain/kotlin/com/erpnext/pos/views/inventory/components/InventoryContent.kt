@@ -25,7 +25,7 @@ fun InventoryContent(
         InventoryFilters(
             searchQuery = searchQuery,
             selectedCategory = selectedCategory,
-            categories = state.categories.map { it.name },
+            categories = state.categories?.map { it.name!! },
             onQueryChange = onQueryChanged,
             onCategoryChange = onCategorySelected,
             onSearchQueryChanged = { query -> {} },
