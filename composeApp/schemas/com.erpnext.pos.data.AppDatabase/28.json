@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "265bb786df5dc416a180843c91ae0969",
+    "identityHash": "9d6d3455fe8d16f64ff0ae7b727417a1",
     "entities": [
       {
         "tableName": "tabUser",
@@ -624,8 +624,8 @@
         }
       },
       {
-        "tableName": "tabSalesInvoice",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`invoice_id` TEXT NOT NULL, `posting_date` TEXT NOT NULL, `posting_time` TEXT NOT NULL, `customer` TEXT NOT NULL, `customer_name` TEXT, `customer_phone` TEXT, `due_date` TEXT, `currency` TEXT, `net_total` REAL NOT NULL, `grand_total` REAL NOT NULL, `paid_amount` REAL NOT NULL, `outstanding_amount` REAL NOT NULL, `doc_status` INTEGER NOT NULL, `status` TEXT, `is_pos` INTEGER NOT NULL, PRIMARY KEY(`invoice_id`))",
+        "tableName": "tabPendingSalesInvoice",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`invoice_id` TEXT NOT NULL, `posting_date` TEXT NOT NULL, `posting_time` TEXT NOT NULL, `customer` TEXT NOT NULL, `customer_name` TEXT, `customer_phone` TEXT, `due_date` TEXT, `currency` TEXT, `net_total` REAL NOT NULL, `grand_total` REAL NOT NULL, `paid_amount` REAL NOT NULL, `outstanding_amount` REAL NOT NULL, `doc_status` INTEGER NOT NULL, `status` TEXT, `is_pos` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `synced` INTEGER NOT NULL, `last_attempt` INTEGER, `attempts` INTEGER NOT NULL, PRIMARY KEY(`invoice_id`))",
         "fields": [
           {
             "fieldPath": "invoiceId",
@@ -711,6 +711,29 @@
             "columnName": "is_pos",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAttempt",
+            "columnName": "last_attempt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "attempts",
+            "columnName": "attempts",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -741,7 +764,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '265bb786df5dc416a180843c91ae0969')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9d6d3455fe8d16f64ff0ae7b727417a1')"
     ]
   }
 }

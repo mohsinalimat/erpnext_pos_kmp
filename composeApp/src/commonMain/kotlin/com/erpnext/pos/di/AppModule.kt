@@ -29,7 +29,7 @@ import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.api.defaultEngine
 import com.erpnext.pos.remoteSource.datasources.CustomerRemoteSource
 import com.erpnext.pos.remoteSource.datasources.InventoryRemoteSource
-import com.erpnext.pos.remoteSource.datasources.InvoiceRemoteSource
+import com.erpnext.pos.remoteSource.datasources.SalesInvoiceRemoteSource
 import com.erpnext.pos.remoteSource.datasources.POSProfileRemoteSource
 import com.erpnext.pos.remoteSource.datasources.UserRemoteSource
 import com.erpnext.pos.views.CashBoxManager
@@ -111,7 +111,7 @@ val appModule = module {
     single { InventoryRemoteSource(get(), get()) }
     single { InventoryLocalSource(get(), get()) }
     single<IInventoryRepository> { InventoryRepository(get(), get()) }
-    single { InventoryViewModel(get(), get(), get(), get(), get()) }
+    single { InventoryViewModel(get(), get(), get(), get()) }
     //endregion
 
     //region POS Profile
@@ -134,7 +134,7 @@ val appModule = module {
     //endregion
 
     //region Invoices
-    single { InvoiceRemoteSource(get(), get()) }
+    single { SalesInvoiceRemoteSource(get(), get()) }
     single { InvoiceViewModel(get(), get(), get()) }
     single<ISaleInvoiceRepository> { SalesInvoiceRepository(get()) }
     //endregion

@@ -122,22 +122,27 @@ suspend inline fun <reified T> HttpClient.getERPSingle(
     doctype: String,
     name: String,
     baseUrl: String?,
+    fields: List<String> = emptyList(),
     additionalHeaders: Map<String, String> = emptyMap()
 ): T {
-    require(baseUrl != null && baseUrl.isNotBlank()) { "baseUrl no puede ser nulo o vacío" }
+    require(!baseUrl.isNullOrBlank()) { "baseUrl no puede ser nulo o vacío" }
 
     val endpoint = baseUrl.trimEnd('/') + "/api/resource/${encodeURIComponent(doctype)}/$name"
 
     val response: HttpResponse = this.get {
-        url { takeFrom(endpoint) }
-        if (additionalHeaders.isNotEmpty()) headers {
-            additionalHeaders.forEach { (k, v) ->
-                append(
-                    k,
-                    v
-                )
+        url {
+            takeFrom(endpoint)
+            // Agregar campos específicos si se solicitan
+            if (fields.isNotEmpty()) {
+                parameters.append("fields", json.encodeToString(fields))
             }
         }
+
+        // Headers opcionales (Auth, Token, etc.)
+        if (additionalHeaders.isNotEmpty()) headers {
+            additionalHeaders.forEach { (k, v) -> append(k, v) }
+        }
+
         accept(ContentType.Application.Json)
     }
 
@@ -154,8 +159,10 @@ suspend inline fun <reified T> HttpClient.getERPSingle(
     val parsed = json.parseToJsonElement(bodyText).jsonObject
     val dataElement = parsed["data"]
         ?: throw FrappeException("La respuesta no contiene 'data'. Respuesta: $bodyText")
+
     return json.decodeFromJsonElement<T>(dataElement)
 }
+
 
 suspend inline fun <reified T, reified R> HttpClient.postERP(
     doctype: String,

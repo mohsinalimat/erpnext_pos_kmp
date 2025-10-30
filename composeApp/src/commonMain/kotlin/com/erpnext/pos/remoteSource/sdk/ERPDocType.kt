@@ -40,8 +40,19 @@ val fields: List<DocTypeFields> = listOf(
     ),
     DocTypeFields(
         ERPDocType.POSProfile, listOf(
-            "name", "company", "route",
-            "customer", "disabled", "currency", "warehouse", "country"
+            "name",
+            "warehouse",
+            "route",
+            "country",
+            "company",
+            "currency",
+            "income_account",
+            "expense_account",
+            "payments",
+            "branch",
+            "applyDiscountOn",
+            "cost_center",
+            "selling_price_list"
         )
     ),
     DocTypeFields(

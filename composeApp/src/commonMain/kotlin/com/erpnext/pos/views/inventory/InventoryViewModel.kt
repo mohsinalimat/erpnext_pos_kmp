@@ -13,15 +13,12 @@ import com.erpnext.pos.domain.usecases.FetchCategoriesUseCase
 import com.erpnext.pos.domain.usecases.FetchInventoryItemUseCase
 import com.erpnext.pos.domain.usecases.InventoryInput
 import com.erpnext.pos.navigation.NavigationManager
-import com.erpnext.pos.remoteSource.dto.ItemDto
-import com.erpnext.pos.remoteSource.oauth.AuthInfoStore
 import com.erpnext.pos.views.CashBoxManager
 import com.erpnext.pos.views.CashBoxState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancelAndJoin
@@ -33,7 +30,6 @@ class InventoryViewModel(
     private val fetchCategoryUseCase: FetchCategoriesUseCase,
     private val fetchInventoryItemUseCase: FetchInventoryItemUseCase,
     private val cashboxManager: CashBoxManager,
-    private val authStore: AuthInfoStore
 ) : BaseViewModel() {
 
     private val _stateFlow: MutableStateFlow<InventoryState> =
@@ -88,8 +84,6 @@ class InventoryViewModel(
                             _stateFlow.update { InventoryState.Empty }
                         }
                     }
-
-                    else -> Unit
                 }
             }
         }
@@ -113,7 +107,7 @@ class InventoryViewModel(
                         _stateFlow.update { InventoryState.Empty }
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _stateFlow.update { InventoryState.Empty }
             }
         }
@@ -173,11 +167,8 @@ class InventoryViewModel(
     private fun applyLocalFilter(query: String, category: String) {
         viewModelScope.launch(Dispatchers.IO) { // <<== usar Default o IO
             val filtered = basePagingData.filter { item ->
-                val matchesCategory = category == "Todos" || category.isBlank() ||
-                        item.itemGroup?.equals(category, true) == true
-                val matchesQuery = query.isBlank() ||
-                        item.name?.contains(query, true) == true ||
-                        item.itemCode?.contains(query, true) == true
+                val matchesCategory = category == "Todos" || category.isBlank() || item.itemGroup.equals(category, true)
+                val matchesQuery = query.isBlank() || item.name.contains(query, true) || item.itemCode.contains(query, true)
                 matchesCategory && matchesQuery
             }
 
@@ -185,8 +176,6 @@ class InventoryViewModel(
             _stateFlow.value = InventoryState.Success(flowOf(filtered), currentCategories)
         }
     }
-
-    suspend fun fetchBaseUrl(): String = authStore.getCurrentSite() ?: ""
 
     fun refresh() {
         viewModelScope.launch {

@@ -1,7 +1,7 @@
 package com.erpnext.pos.remoteSource.mapper
 
 import com.erpnext.pos.localSource.entities.ItemEntity
-import com.erpnext.pos.localSource.entities.SalesInvoiceEntity
+import com.erpnext.pos.localSource.entities.PendingSalesInvoiceEntity
 import com.erpnext.pos.remoteSource.dto.ItemDto
 import com.erpnext.pos.remoteSource.dto.PendingInvoiceDto
 import com.erpnext.pos.remoteSource.dto.WarehouseItemDto
@@ -17,12 +17,12 @@ fun List<WarehouseItemDto>.toEntity(): List<ItemEntity> {
     return this.map { it.toEntity() }
 }
 
-fun List<PendingInvoiceDto>.toEntity() : List<SalesInvoiceEntity> {
+fun List<PendingInvoiceDto>.toEntity() : List<PendingSalesInvoiceEntity> {
     return this.map { it.toEntity() }
 }
 
-fun PendingInvoiceDto.toEntity(): SalesInvoiceEntity {
-    return SalesInvoiceEntity(
+fun PendingInvoiceDto.toEntity(): PendingSalesInvoiceEntity {
+    return PendingSalesInvoiceEntity(
         invoiceId = this.name,
         postingDate = this.postingDate,
         postingTime = "",

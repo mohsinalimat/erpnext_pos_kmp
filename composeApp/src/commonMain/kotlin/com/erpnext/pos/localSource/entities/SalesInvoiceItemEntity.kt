@@ -1,59 +1,86 @@
 package com.erpnext.pos.localSource.entities
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-@Entity(tableName = "tabSalesInvoice")
-data class SalesInvoiceEntity(
+@OptIn(ExperimentalTime::class)
+@Entity(
+    tableName = "tabSalesInvoiceItem",
+    foreignKeys = [
+        ForeignKey(
+            entity = SalesInvoiceEntity::class,
+            parentColumns = ["invoice_name"],
+            childColumns = ["parent_invoice"],
+            onDelete = ForeignKey.CASCADE,
+            onUpdate = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index(value = ["parent_invoice"]),
+        Index(value = ["item_code"])
+    ]
+)
+data class SalesInvoiceItemEntity(
 
-    @PrimaryKey(autoGenerate = false)
-    @ColumnInfo(name = "invoice_id")
-    val invoiceId: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
 
-    @ColumnInfo(name = "posting_date")
-    val postingDate: String, // "YYYY-MM-DD"
+    // 🔗 Referencia a la factura
+    @ColumnInfo(name = "parent_invoice")
+    val parentInvoice: String, // invoice_name del padre
 
-    @ColumnInfo(name = "posting_time")
-    val postingTime: String, // "HH:mm:ss"
+    // 🧩 Identificación del ítem
+    @ColumnInfo(name = "item_code")
+    val itemCode: String,
+    @ColumnInfo(name = "item_name")
+    val itemName: String? = null,
+    @ColumnInfo(name = "description")
+    val description: String? = null,
+    @ColumnInfo(name = "uom")
+    val uom: String? = "Unit",
+    @ColumnInfo(name = "qty")
+    val qty: Double = 1.0,
+    @ColumnInfo(name = "rate")
+    val rate: Double = 0.0,
+    @ColumnInfo(name = "amount")
+    val amount: Double = 0.0,
 
-    @ColumnInfo(name = "customer")
-    val customer: String,
+    // 💰 Cuentas y precios
+    @ColumnInfo(name = "price_list_rate")
+    val priceListRate: Double = 0.0,
+    @ColumnInfo(name = "discount_percentage")
+    val discountPercentage: Double = 0.0,
+    @ColumnInfo(name = "discount_amount")
+    val discountAmount: Double = 0.0,
+    @ColumnInfo(name = "net_rate")
+    val netRate: Double = 0.0,
+    @ColumnInfo(name = "net_amount")
+    val netAmount: Double = 0.0,
 
-    @ColumnInfo(name = "customer_name")
-    val customerName: String? = null,
+    // 🧾 Impuestos individuales (si aplica)
+    @ColumnInfo(name = "tax_rate")
+    val taxRate: Double = 0.0,
+    @ColumnInfo(name = "tax_amount")
+    val taxAmount: Double = 0.0,
 
-    @ColumnInfo(name = "customer_phone")
-    val customerPhone: String? = null,
+    // 📦 Almacén y trazabilidad
+    @ColumnInfo(name = "warehouse")
+    val warehouse: String? = null,
+    @ColumnInfo(name = "batch_no")
+    val batchNo: String? = null,
+    @ColumnInfo(name = "serial_no")
+    val serialNo: String? = null,
+    @ColumnInfo("income_account")
+    val incomeAccount: String? = null,
+    @ColumnInfo("cost_center")
+    val costCenter: String? = null,
 
-    @ColumnInfo(name = "due_date")
-    val dueDate: String? = null,
-
-    @ColumnInfo(name = "currency")
-    val currency: String? = "NIO",
-
-    @ColumnInfo(name = "net_total")
-    val netTotal: Double = 0.0,
-
-    @ColumnInfo(name = "grand_total")
-    val grandTotal: Double = 0.0,
-
-    @ColumnInfo(name = "paid_amount")
-    val paidAmount: Double = 0.0,
-
-    @ColumnInfo(name = "outstanding_amount")
-    val outstandingAmount: Double = 0.0,
-
-    // Sync and status
-    @ColumnInfo(name = "doc_status")
-    val docStatus: Int = 0, // 0 = Draft, 1 = Submitted, 2 = Cancelled
-
-    @ColumnInfo(name = "status")
-    val status: String? = null,
-
-    @ColumnInfo(name = "is_pos")
-    val isPOS: Boolean = false
+    // ⚙️ Estado y auditoría
+    @ColumnInfo(name = "is_return")
+    val isReturn: Boolean = false,
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long = Clock.System.now().toEpochMilliseconds(),
+    @ColumnInfo(name = "modified_at")
+    val modifiedAt: Long = Clock.System.now().toEpochMilliseconds()
 )

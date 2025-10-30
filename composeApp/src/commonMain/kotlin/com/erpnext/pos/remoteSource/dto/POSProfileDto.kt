@@ -6,26 +6,33 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class POSProfileSimpleDto(
     @SerialName("name") val profileName: String,
-    @SerialName("warehouse")
-    val warehouse: String,
-    val country: String,
-    @Serializable(with = IntAsBooleanSerializer::class) val disabled: Boolean,
     val company: String,
     val currency: String,
 )
 
 @Serializable
 data class POSProfileDto(
-    @SerialName("name") val profileName: String,
+    @SerialName("name")
+    val profileName: String,
     @SerialName("warehouse")
     val warehouse: String,
-    @SerialName("route")
     val route: String,
     val country: String,
-    @Serializable(with = IntAsBooleanSerializer::class) val disabled: Boolean,
     val company: String,
     val currency: String,
-    @SerialName("payments") val payments: List<PaymentModesDto>
+    @SerialName("income_account")
+    val incomeAccount: String,
+    @SerialName("expense_account")
+    val expenseAccount: String,
+    @SerialName("payments")
+    val payments: List<PaymentModesDto>,
+    val branch: String,
+    @SerialName("apply_discount_on")
+    val applyDiscountOn: String,
+    @SerialName("cost_center")
+    val costCenter: String,
+    @SerialName("selling_price_list")
+    val sellingPriceList: String
 )
 
 @Serializable

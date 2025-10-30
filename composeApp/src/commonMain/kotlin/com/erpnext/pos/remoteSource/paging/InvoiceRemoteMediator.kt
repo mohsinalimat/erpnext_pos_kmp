@@ -5,7 +5,7 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import com.erpnext.pos.localSource.dao.PendingInvoiceDao
-import com.erpnext.pos.localSource.entities.SalesInvoiceEntity
+import com.erpnext.pos.localSource.entities.PendingSalesInvoiceEntity
 import com.erpnext.pos.remoteSource.api.APIService
 import com.erpnext.pos.remoteSource.mapper.toEntity
 import kotlinx.coroutines.Dispatchers
@@ -20,11 +20,11 @@ class InvoiceRemoteMediator(
     private val posProfile: String,
     private val pageSize: Int = 20,
     private val preserveCacheOnEmptyRefresh: Boolean = true
-) : RemoteMediator<Int, SalesInvoiceEntity>() {
+) : RemoteMediator<Int, PendingSalesInvoiceEntity>() {
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, SalesInvoiceEntity>
+        state: PagingState<Int, PendingSalesInvoiceEntity>
     ): MediatorResult {
         return withContext(Dispatchers.IO) {
             try {

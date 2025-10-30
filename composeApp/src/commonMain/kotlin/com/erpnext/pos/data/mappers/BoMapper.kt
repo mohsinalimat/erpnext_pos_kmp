@@ -5,11 +5,13 @@ import androidx.paging.map
 import com.erpnext.pos.domain.models.CategoryBO
 import com.erpnext.pos.domain.models.ItemBO
 import com.erpnext.pos.domain.models.POSProfileBO
+import com.erpnext.pos.domain.models.POSProfileSimpleBO
 import com.erpnext.pos.domain.models.PaymentModesBO
 import com.erpnext.pos.domain.models.PendingInvoiceBO
 import com.erpnext.pos.domain.models.UserBO
 import com.erpnext.pos.localSource.entities.CategoryEntity
 import com.erpnext.pos.localSource.entities.ItemEntity
+import com.erpnext.pos.localSource.entities.PendingSalesInvoiceEntity
 import com.erpnext.pos.localSource.entities.SalesInvoiceEntity
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ItemDto
@@ -22,7 +24,7 @@ import kotlinx.coroutines.flow.transform
 import kotlin.jvm.JvmName
 
 @JvmName("toPagingFlowPendingInvoiceBO")
-fun Flow<PagingData<SalesInvoiceEntity>>.toPagingBO(): Flow<PagingData<PendingInvoiceBO>> {
+fun Flow<PagingData<PendingSalesInvoiceEntity>>.toPagingBO(): Flow<PagingData<PendingInvoiceBO>> {
     return transform { value ->
         emit(value.map {
             it.toBO()
@@ -45,24 +47,7 @@ fun List<PaymentModesDto>.toBO(): List<PaymentModesBO> {
 
 fun PaymentModesDto.toBO(): PaymentModesBO {
     return PaymentModesBO(
-        name = this.name,
-        modeOfPayment = this.modeOfPayment
-    )
-}
-
-fun List<POSProfileSimpleDto>.toBO(): List<POSProfileBO> {
-    return this.map { it.toBO() }
-}
-
-fun POSProfileSimpleDto.toBO(): POSProfileBO {
-    return POSProfileBO(
-        name = this.profileName,
-        warehouse = this.warehouse,
-        country = this.country,
-        disabled = this.disabled,
-        company = this.company,
-        currency = this.currency,
-        paymentModes = emptyList()
+        name = this.name, modeOfPayment = this.modeOfPayment
     )
 }
 
@@ -102,7 +87,7 @@ fun ItemDto.toBO(): ItemBO {
 }
 
 @JvmName("toBOSalesInvoiceEntity")
-fun SalesInvoiceEntity.toBO(): PendingInvoiceBO {
+fun PendingSalesInvoiceEntity.toBO(): PendingInvoiceBO {
     return PendingInvoiceBO(
         invoiceId = this.invoiceId,
         customerId = this.customer,
@@ -117,7 +102,7 @@ fun SalesInvoiceEntity.toBO(): PendingInvoiceBO {
         isPos = this.isPOS,
         currency = this.currency,
         docStatus = this.docStatus,
-        status = this.status
+        status = this.status,
     )
 }
 
@@ -157,10 +142,28 @@ fun POSProfileDto.toBO(): POSProfileBO {
         name = this.profileName,
         warehouse = this.warehouse,
         country = this.country,
-        disabled = this.disabled,
         company = this.company,
         currency = this.currency,
         route = this.route,
+        incomeAccount = this.incomeAccount,
+        expenseAccount = this.expenseAccount,
         paymentModes = this.payments.toBO(),
+        branch = this.branch,
+        costCenter = this.costCenter,
+        applyDiscountOn = this.applyDiscountOn,
+        sellingPriceList = this.sellingPriceList
+    )
+}
+
+fun List<POSProfileSimpleDto>.toBO(): List<POSProfileSimpleBO> {
+    return this.map { it.toBO() }
+}
+
+fun POSProfileSimpleDto.toBO(): POSProfileSimpleBO {
+    return POSProfileSimpleBO(
+        name = this.profileName,
+        company = this.company,
+        currency = this.currency,
+        paymentModes = emptyList()
     )
 }

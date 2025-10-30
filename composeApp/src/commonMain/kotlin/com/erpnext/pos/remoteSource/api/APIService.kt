@@ -1,6 +1,7 @@
 package com.erpnext.pos.remoteSource.api
 
 import com.erpnext.pos.BuildKonfig
+import com.erpnext.pos.localSource.dao.SalesInvoiceDao
 import com.erpnext.pos.remoteSource.dto.BinDto
 import com.erpnext.pos.remoteSource.dto.CategoryDto
 import com.erpnext.pos.remoteSource.dto.ContactChildDto
@@ -14,6 +15,7 @@ import com.erpnext.pos.remoteSource.dto.POSOpeningEntryDto
 import com.erpnext.pos.remoteSource.dto.POSProfileDto
 import com.erpnext.pos.remoteSource.dto.POSProfileSimpleDto
 import com.erpnext.pos.remoteSource.dto.PendingInvoiceDto
+import com.erpnext.pos.remoteSource.dto.SalesInvoiceDto
 import com.erpnext.pos.remoteSource.dto.TokenResponse
 import com.erpnext.pos.remoteSource.dto.UserDto
 import com.erpnext.pos.remoteSource.dto.WarehouseItemDto
@@ -33,6 +35,7 @@ import com.erpnext.pos.remoteSource.sdk.getERPList
 import com.erpnext.pos.remoteSource.sdk.getERPSingle
 import com.erpnext.pos.remoteSource.sdk.getFields
 import com.erpnext.pos.remoteSource.sdk.postERP
+import com.erpnext.pos.remoteSource.sdk.putERP
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.HttpClientEngine
@@ -194,8 +197,9 @@ class APIService(
         val url = authStore.getCurrentSite()
         return clientOAuth.getERPSingle(
             doctype = ERPDocType.POSProfile.path,
+            fields = ERPDocType.POSProfile.getFields(),
             name = profileId.encodeURLParameter(),
-            baseUrl = url
+            baseUrl = url,
         )
     }
 
@@ -204,10 +208,10 @@ class APIService(
         return try {
             clientOAuth.getERPList(
                 doctype = ERPDocType.POSProfile.path,
-                fields = ERPDocType.POSProfile.getFields(),
+                fields = listOf("name", "company", "currency"),
                 baseUrl = url,
                 filters = filters {
-                    Filter("disabled", Operator.EQ, false)
+                    "disabled" eq false
                 }
             )
         } catch (e: Exception) {
@@ -430,6 +434,36 @@ class APIService(
             emptyList()
         }
     }
+
+    //region Invoice - Checkout
+    suspend fun createSalesInvoice(data: SalesInvoiceDto): SalesInvoiceDto {
+        val url = authStore.getCurrentSite()
+        return client.postERP(
+            doctype = ERPDocType.SalesInvoice.path,
+            payload = data,
+            baseUrl = url,
+        )
+    }
+
+    suspend fun getSalesInvoiceByName(name: String): SalesInvoiceDto {
+        val url = authStore.getCurrentSite()
+        return client.getERPSingle(
+            doctype = ERPDocType.SalesInvoice.path,
+            name = name,
+            baseUrl = url,
+        )
+    }
+
+    suspend fun updateSalesInvoice(name: String, data: SalesInvoiceDto): SalesInvoiceDto {
+        val url = authStore.getCurrentSite()
+        return client.putERP(
+            doctype = ERPDocType.SalesInvoice.path,
+            name = name,
+            payload = data,
+            baseUrl = url
+        )
+    }
+    //endregion
 }
 
 expect fun defaultEngine(): HttpClientEngine

@@ -22,7 +22,7 @@ import com.erpnext.pos.localSource.entities.POSInvoiceItemEntity
 import com.erpnext.pos.localSource.entities.POSInvoicePaymentEntity
 import com.erpnext.pos.localSource.entities.POSProfileEntity
 import com.erpnext.pos.localSource.entities.PaymentModesEntity
-import com.erpnext.pos.localSource.entities.SalesInvoiceEntity
+import com.erpnext.pos.localSource.entities.PendingSalesInvoiceEntity
 import com.erpnext.pos.localSource.entities.UserEntity
 
 @Database(
@@ -37,9 +37,9 @@ import com.erpnext.pos.localSource.entities.UserEntity
         CashboxEntity::class,
         BalanceDetailsEntity::class,
         CustomerEntity::class,
-        SalesInvoiceEntity::class,
+        PendingSalesInvoiceEntity::class,
         CategoryEntity::class
-    ], version = 28,
+    ], version = 29,
     exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -52,6 +52,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun customerDao(): CustomerDao
     abstract fun pendingInvoiceDao(): PendingInvoiceDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun sale
 }
 
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
